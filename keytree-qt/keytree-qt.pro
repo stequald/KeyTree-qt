@@ -19,6 +19,9 @@ SOURCES += main.cpp\
     keytree/logger.cpp \
     keytree/keytree.cpp \
     keytree/CoinClasses/hdkeys.cpp \
+    elasticnodes/node.cpp \
+    elasticnodes/graphwidget.cpp \
+    elasticnodes/edge.cpp
 
 HEADERS  += mainwindow.h \
     keytree/stringutils.h \
@@ -32,6 +35,9 @@ HEADERS  += mainwindow.h \
     keytree/CoinClasses/encodings.h \
     keytree/CoinClasses/BigInt.h \
     keytree/CoinClasses/Base58Check.h \
+    elasticnodes/node.h \
+    elasticnodes/graphwidget.h \
+    elasticnodes/edge.h
 
 FORMS    += mainwindow.ui
 

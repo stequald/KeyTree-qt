@@ -30,6 +30,8 @@
 #include <stdexcept>
 #include "keytree/logger.h"
 
+#include "elasticnodes/graphwidget.h"
+
 using namespace std;
 
 static const std::string HELP = "help";
@@ -229,6 +231,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //setFixedSize(windowFixedSize);
     this->setMinimumSize(100, 100);
 
+    GraphWidget* treeGraphWidget = new GraphWidget;
+    ui->formLayout->addWidget(treeGraphWidget);
 
     connect( ui->extKeyButton, SIGNAL( clicked() ), this, SLOT(extkeyClicked()) );
     connect( ui->bitcoinKeyButton, SIGNAL( clicked() ), this, SLOT(bitcoinkeyClicked()) );

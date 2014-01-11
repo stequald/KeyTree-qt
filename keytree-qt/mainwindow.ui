@@ -266,6 +266,17 @@
      <string>Export</string>
     </property>
    </widget>
+   <widget class="QWidget" name="formLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>10</y>
+      <width>441</width>
+      <height>371</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout"/>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
