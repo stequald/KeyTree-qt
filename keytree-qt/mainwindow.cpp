@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// kt.h
+// mainwindow.cpp
 //
 // Copyright (c) 2013-2014 Tim Lee
 //
@@ -29,8 +29,8 @@
 #include <algorithm>
 #include <stdexcept>
 #include "keytree/logger.h"
+#include <QToolTip>
 
-#include "elasticnodes/graphwidget.h"
 
 using namespace std;
 
@@ -78,12 +78,15 @@ static const std::string DEFAULT_I_MAX = "4";
 void MainWindow::outputExtKeys(KeyTree& keyTree) {
     while (! keyTree.isAtEndOfChain()) { //TODO: change to iterator instead
         KeyNode data = keyTree.getNextInChain();
-        outputString("* [Chain " + data.chain + "]");
-        outputString("  * ext pub: " + data.extpub);
-        if (data.extprv != "") outputString("  * ext prv: " + data.extprv);
-        //outputString("  * priv key: " + data.privkey);
-        //outputString("  * address: " + data.address);
-        //outputString("");
+        std::string nodeData("");
+        nodeData += "* [Chain " + data.chain + "]\n";
+        nodeData += "  * ext pub: " + data.extpub + "\n";
+        if (data.extprv != "")  nodeData += "  * ext prv: " + data.extprv;
+        outputString(nodeData);
+
+
+        QString nodeDescription =  this->qStringFromSTDString(nodeData);
+        this->treeWidget->addItem(nodeDescription, 0, 0, 0);
     }
 }
 
@@ -103,13 +106,13 @@ void MainWindow::outputExtKeysFromSeed(const std::string seed, const std::string
 
     KeyTree keyTree(seed, chainStr, seedStringFormat);
     KeyNode data = keyTree.getCurrentInChain();
-    outputString("Master (hex): " + seedHex);
-    outputString("* [Chain " + data.chain + "]");
-    outputString("  * ext pub: " + data.extpub);
-    outputString("  * ext prv: " + data.extprv);
-    //outputString("  * priv key: " + data.privkey);
-    //outputString("  * address: " + data.address);
-    //outputString("");
+    std::string nodeData("");
+    nodeData += "Master (hex): " + seedHex + "\n";
+    nodeData += "* [Chain " + data.chain + "]\n";
+    nodeData += "  * ext pub: " + data.extpub + "\n";
+    nodeData += "  * ext prv: " + data.extprv;
+    outputString(nodeData);
+
     outputExtKeys(keyTree);
 }
 
@@ -121,28 +124,25 @@ void MainWindow::outputExtKeysFromExtKey(const std::string extKey, const std::st
 void MainWindow::outputKeyAddressesFromExtKey(const std::string extKey, uint32_t i_min, uint32_t i_max) {
     for (uint32_t i = i_min; i < i_max; i++ ) {
 
-        Logger::debug("ssssssssss");
-        Logger::debug("extKey: " + extKey);
-
         KeyNode data = KeyTree::getChildOfExtKey(extKey, i);
-        //outputString("* [Chain " + data.chain + "]");
-        //outputString("  * ext pub: " + data.extpub);
-        //outputString("  * ext prv: " + data.extprv);
-        if (data.privkey != "") outputString("  * priv key: " + data.privkey);
-        outputString("  * address: " + data.address);
-        outputString("");
+        std::string nodeData("");
+        if (data.privkey != "")  nodeData += "  * priv key: " + data.privkey + "\n";
+        nodeData += "  * address: " + data.address;
+        outputString(nodeData);
     }
 }
 
 void MainWindow::outputKeyAddressofExtKey(const std::string extKey) {
     KeyTree keyTree(extKey, "m");
     KeyNode data = keyTree.getCurrentInChain();
-    //outputString("* [Chain " + data.chain + "]");
-    outputString("  * ext pub: " + data.extpub);
-    if (data.extprv != "") outputString("  * ext prv: " + data.extprv);
-    if (data.privkey != "") outputString("  * priv key: " + data.privkey);
-    outputString("  * address: " + data.address);
-    outputString("");
+
+    std::string nodeData("");
+    //nodeData += "* [Chain " + data.chain + "]\n";
+    nodeData += "  * ext pub: " + data.extpub + "\n";
+    if (data.extprv != "")  nodeData += "  * ext prv: " + data.extprv + "\n";
+    if (data.extprv != "")  nodeData += "  * priv key: " + data.privkey + "\n";
+    nodeData += "  * address: " + data.address;
+    outputString(nodeData);
 }
 
 
@@ -216,7 +216,7 @@ void MainWindow::outputExamples() {
 
 
 void MainWindow::outputString(const std::string str) {
-    Logger::log(str);
+    //Logger::log(str);
     QString qtext = qStringFromSTDString(str+"");
     ui->resultsTextEdit->append(qtext);
 }
@@ -231,8 +231,10 @@ MainWindow::MainWindow(QWidget *parent) :
     //setFixedSize(windowFixedSize);
     this->setMinimumSize(100, 100);
 
-    GraphWidget* treeGraphWidget = new GraphWidget;
-    ui->formLayout->addWidget(treeGraphWidget);
+    treeWidget = new GraphWidget;
+    ui->formLayout->addWidget(treeWidget);
+
+
 
     connect( ui->extKeyButton, SIGNAL( clicked() ), this, SLOT(extkeyClicked()) );
     connect( ui->bitcoinKeyButton, SIGNAL( clicked() ), this, SLOT(bitcoinkeyClicked()) );
@@ -268,6 +270,10 @@ MainWindow::MainWindow(QWidget *parent) :
     seedRadioButtonClicked();
 
     testVector1();
+
+
+    fullTreeDescription = std::string("");
+    ui->resultsTextEdit->setFont(QFont ("Helvetica", 8));
 }
 
 void MainWindow::defaultChainsComboBoxActivated(int idx)
@@ -354,6 +360,11 @@ void MainWindow::extkeyEditingFinished()
 }
 
 
+void MainWindow::clearTree()
+{
+    ui->resultsTextEdit->clear();
+    treeWidget->removeAllItem();
+}
 
 void MainWindow::extkeyClicked()
 {
@@ -378,7 +389,7 @@ void MainWindow::extkeyClicked()
             return;
         }
         this->unHighlightAllTextEditsBackground();
-        ui->resultsTextEdit->clear();
+        this->clearTree();
 
         try {
 
@@ -397,7 +408,7 @@ void MainWindow::extkeyClicked()
         Logger::debug("*seed: " + seed);
         Logger::debug("*seedHex: " + seedHex);
 
-        ui->resultsTextEdit->clear();
+        this->clearTree();
         try {
             this->outputExtKeysFromSeed(seedHex, chain, StringUtils::hex);
         } catch (const std::runtime_error& err) {
@@ -418,6 +429,8 @@ bool MainWindow::isValidExtKey(const std::string extKey)
 
 void MainWindow::bitcoinkeyClicked()
 {
+    QToolTip::showText(ui->iMaxLineEdit->mapToGlobal(QPoint()), "A tool tip");
+
     std::string extKey =  stdStringFromQString(ui->extKeyLineEdit->text());
 
     if (! this->isValidExtKey(extKey)) {
@@ -445,13 +458,9 @@ void MainWindow::bitcoinkeyClicked()
     ui->resultsTextEdit->clear();
 
     try {
-        Logger::debug("imin: " + imin);
 
-        Logger::debug("imax: " + imin);
         std::cout << std::atoi(imin.c_str()) << endl;
-        Logger::debug("asddfasddf");
         this->outputKeyAddressesFromExtKey(extKey, std::atoi(imin.c_str()), std::atoi(imax.c_str()));
-        Logger::debug("asddfasddf");
 
     } catch (const std::runtime_error& err) {
         outputString("Error: " + std::string(err.what()));
@@ -464,6 +473,7 @@ void MainWindow::bitcoinkeyClicked()
 
 MainWindow::~MainWindow()
 {
+    delete treeWidget;
     delete ui;
 }
 

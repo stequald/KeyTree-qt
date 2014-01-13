@@ -46,7 +46,9 @@
 #include "edge.h"
 #include "node.h"
 #include "graphwidget.h"
- 
+#include "keytree/logger.h"
+#include <QToolTip>
+
 Node::Node(GraphWidget *graphWidget)
   : graph(graphWidget)
 {
@@ -54,8 +56,26 @@ Node::Node(GraphWidget *graphWidget)
   setFlag(ItemSendsGeometryChanges);
   setCacheMode(DeviceCoordinateCache);
   setZValue(-1);
+
+    setAcceptHoverEvents(true);
+    setToolTip(QString("say whaddt"));
+    QToolTip::setFont(QFont ("Helvetica", 8));
 }
- 
+
+Node::Node(GraphWidget *graphWidget, QString nodeDescription)
+  : graph(graphWidget)
+{
+  setFlag(ItemIsMovable);
+  setFlag(ItemSendsGeometryChanges);
+  setCacheMode(DeviceCoordinateCache);
+  setZValue(-1);
+
+    setAcceptHoverEvents(true);
+    setToolTip(nodeDescription);
+}
+
+
+
 void Node::addEdge(Edge *edge)
 {
   edgeList << edge;
@@ -141,7 +161,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
   painter->setPen(Qt::NoPen);
   painter->setBrush(Qt::darkGray);
   painter->drawEllipse(-7, -7, 20, 20);
- 
+
   QRadialGradient gradient(-3, -3, 10);
   if (option->state & QStyle::State_Sunken)  {
     gradient.setCenter(3, 3);
@@ -154,7 +174,12 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
   }
   painter->setBrush(gradient);
   painter->setPen(QPen(Qt::black, 0));
+
+  //int xy = 3;
+  //painter->drawText(xy,xy,"testdddddddd");
+
   painter->drawEllipse(-10, -10, 20, 20);
+  //painter->drawRoundedRect(-10, -10, 20, 20, 5, 5);
 }
  
 QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
@@ -182,4 +207,16 @@ void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
   update();
   QGraphicsItem::mouseReleaseEvent(event);
+}
+
+void Node::hoverEnterEvent (QGraphicsSceneHoverEvent * event) {
+    //QToolTip::showText();
+    //update();
+    QGraphicsItem::hoverEnterEvent(event);
+}
+
+void Node::hoverLeaveEvent (QGraphicsSceneHoverEvent * event) {
+    QToolTip::hideText();
+    update();
+    QGraphicsItem::hoverLeaveEvent(event);
 }

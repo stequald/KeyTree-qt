@@ -48,23 +48,30 @@ class Node;
 class GraphWidget : public QGraphicsView
 {
     Q_OBJECT
- 
+
       public:
   GraphWidget(QWidget *parent = 0);
- 
+
   void itemMoved();
- 
+  void removeAllItem();
+  void addItem(QString nodeDescription, int i, int j, int k);
+
  protected:
   void keyPressEvent(QKeyEvent *event);
   void timerEvent(QTimerEvent *event);
   void wheelEvent(QWheelEvent *event);
   void drawBackground(QPainter *painter, const QRectF &rect);
- 
+
   void scaleView(qreal scaleFactor);
- 
+
  private:
   int timerId;
   Node *centerNode;
+
+  QGraphicsScene *scene;
+  std::vector<std::vector<std::vector<Node*>>> kjiLeafNodes;
+  Node* currentLeaf;
+
 };
  
 #endif

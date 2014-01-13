@@ -256,8 +256,8 @@
    <widget class="QPushButton" name="exportButton">
     <property name="geometry">
      <rect>
-      <x>940</x>
-      <y>690</y>
+      <x>810</x>
+      <y>710</y>
       <width>80</width>
       <height>23</height>
      </rect>

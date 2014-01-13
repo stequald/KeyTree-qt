@@ -52,7 +52,8 @@ class Node : public QGraphicsItem
 {
  public:
   Node(GraphWidget *graphWidget);
- 
+  Node(GraphWidget *graphWidget, QString nodeDescription);
+
   void addEdge(Edge *edge);
   QList<Edge *> edges() const;
  
@@ -71,7 +72,8 @@ class Node : public QGraphicsItem
  
   void mousePressEvent(QGraphicsSceneMouseEvent *event);
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
- 
+  void hoverEnterEvent (QGraphicsSceneHoverEvent * event);
+  void hoverLeaveEvent (QGraphicsSceneHoverEvent * event);
  private:
   QList<Edge *> edgeList;
   QPointF newPos;

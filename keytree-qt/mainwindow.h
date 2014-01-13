@@ -12,6 +12,8 @@
 #include "keytree/keytree.h"
 #include <map>
 #include <QLineEdit>
+#include "elasticnodes/graphwidget.h"
+
 
 namespace Ui {
 class MainWindow;
@@ -62,8 +64,14 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
+
+    GraphWidget* treeWidget;
+
+    void clearTree();
     void unHighlightAllTextEditsBackground();
     bool isValidExtKey(const std::string extKey);
+
+    std::string fullTreeDescription;
 };
 
 #endif // MAINWINDOW_H

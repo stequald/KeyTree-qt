@@ -45,11 +45,13 @@
 #include <QtGui>
  
 #include <math.h>
- 
+#include <QtAlgorithms>
+#include "keytree/logger.h"
+
 GraphWidget::GraphWidget(QWidget *parent)
   : QGraphicsView(parent), timerId(0)
 {
-  QGraphicsScene *scene = new QGraphicsScene(this);
+  scene = new QGraphicsScene(this);
   scene->setItemIndexMethod(QGraphicsScene::NoIndex);
   scene->setSceneRect(-200, -200, 400, 400);
   setScene(scene);
@@ -61,6 +63,15 @@ GraphWidget::GraphWidget(QWidget *parent)
   setMinimumSize(400, 400);
   setWindowTitle(tr("Elastic Nodes"));
  
+  //Node *seedNode = new Node(this);
+  //scene->addItem(seedNode);
+
+  //this->kjiLeafNodes[0][0][0] = seedNode;
+  //this->kjiLeafNodes.at(0).at(0).at(0) = seedNode;
+  //seedNode->setPos(-50, -50);
+
+
+/*
   Node *node1 = new Node(this);
   Node *node2 = new Node(this);
   Node *node3 = new Node(this);
@@ -101,8 +112,46 @@ GraphWidget::GraphWidget(QWidget *parent)
   node7->setPos(-50, 50);
   node8->setPos(0, 50);
   node9->setPos(50, 50);
+  //*/
+  Node *node1 = new Node(this);
+  scene->addItem(node1);
+  node1->setPos(-50, -50);
+  this->currentLeaf = node1;
 }
- 
+
+void GraphWidget::addItem(QString nodeDescription, int i, int j, int k)
+{
+
+    /*
+    Node* currentLeaf = this->kjiLeafNodes[i][j][k];
+    Node *newLeaf = new Node(this, nodeDescription);
+    this->kjiLeafNodes[i][j][k] = newLeaf;
+
+    scene->addItem(newLeaf);
+    scene->addItem(new Edge(currentLeaf, newLeaf));
+    //*/
+
+    Node *newLeaf = new Node(this, nodeDescription);
+    scene->addItem(newLeaf);
+
+    //if (this->currentLeaf != NULL) {
+        Logger::log("newedge");
+        scene->addItem(new Edge(newLeaf, this->currentLeaf));
+        Logger::log("newedge" + std::to_string(this->currentLeaf->pos().y()));
+
+        newLeaf->setPos(-50, this->currentLeaf->pos().y()+20);
+
+        //} else Logger::log("no__edge");
+
+    this->currentLeaf = newLeaf;
+}
+
+void GraphWidget::removeAllItem()
+{
+    //scene->removeItem();
+    qDeleteAll(scene->items());
+}
+
 void GraphWidget::itemMoved()
 {
   if (!timerId)
@@ -132,7 +181,7 @@ void GraphWidget::keyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_Space:
   case Qt::Key_Enter:
-    foreach (QGraphicsItem *item, scene()->items())  {
+    foreach (QGraphicsItem *item, scene->items())  {
       if (qgraphicsitem_cast<Node *>(item))
 	item->setPos(-150 + qrand() % 300, -150 + qrand() % 300);
     }
@@ -147,7 +196,7 @@ void GraphWidget::timerEvent(QTimerEvent *event)
   Q_UNUSED(event);
  
   QList<Node *> nodes;
-  foreach (QGraphicsItem *item, scene()->items())  {
+  foreach (QGraphicsItem *item, scene->items())  {
     if (Node *node = qgraphicsitem_cast<Node *>(item))
       nodes << node;
   }
