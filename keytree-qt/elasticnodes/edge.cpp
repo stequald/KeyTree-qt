@@ -124,12 +124,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 						cos(angle + Pi / 3) * arrowSize);
   QPointF sourceArrowP2 = sourcePoint + QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
 						cos(angle + Pi - Pi / 3) * arrowSize);
-  QPointF destArrowP1 = destPoint + QPointF(sin(angle - Pi / 3) * arrowSize,
-					    cos(angle - Pi / 3) * arrowSize);
-  QPointF destArrowP2 = destPoint + QPointF(sin(angle - Pi + Pi / 3) * arrowSize,
-					    cos(angle - Pi + Pi / 3) * arrowSize);
  
   painter->setBrush(Qt::black);
   painter->drawPolygon(QPolygonF() << line.p1() << sourceArrowP1 << sourceArrowP2);
-  painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
 }
