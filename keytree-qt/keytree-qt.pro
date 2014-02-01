@@ -17,30 +17,27 @@ CONFIG += c++11
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    keytree/logger.cpp \
-    keytree/keytree.cpp \
-    keytree/CoinClasses/hdkeys.cpp \
     elasticnodes/node.cpp \
     elasticnodes/graphwidget.cpp \
-    elasticnodes/edge.cpp
+    elasticnodes/edge.cpp \
+    keynode/keynode.cpp \
+    keynode/logger.cpp \
+    keynode/CoinClasses/hdkeys.cpp
 
 HEADERS  += mainwindow.h \
-    keytree/stringutils.h \
-    keytree/logger.h \
-    keytree/keytree.h \
-    keytree/CoinClasses/uchar_vector.h \
-    keytree/CoinClasses/typedefs.h \
-    keytree/CoinClasses/secp256k1.h \
-    keytree/CoinClasses/hdkeys.h \
-    keytree/CoinClasses/hash.h \
-    keytree/CoinClasses/encodings.h \
-    keytree/CoinClasses/BigInt.h \
-    keytree/CoinClasses/Base58Check.h \
     elasticnodes/node.h \
     elasticnodes/graphwidget.h \
-    elasticnodes/edge.h
+    elasticnodes/edge.h \
+    keynode/keynode.h \
+    keynode/logger.h \
+    keynode/stringutils.h \
+    keynode/CoinClasses/Base58Check.h \
+    keynode/CoinClasses/BigInt.h \
+    keynode/CoinClasses/encodings.h \
+    keynode/CoinClasses/hash.h \
+    keynode/CoinClasses/hdkeys.h \
+    keynode/CoinClasses/secp256k1.h \
+    keynode/CoinClasses/typedefs.h \
+    keynode/CoinClasses/uchar_vector.h
 
 FORMS    += mainwindow.ui
-
-OTHER_FILES += \
-    keytree/HDWallet.1

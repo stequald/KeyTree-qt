@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// logger.h
+// keynode.h
 //
 // Copyright (c) 2013-2014 Tim Lee
 //
@@ -22,32 +22,37 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef KEYTREE_LOGGER_H
-#define KEYTREE_LOGGER_H
+#ifndef KEYNODE_KEYNODE_H
+#define KEYNODE_KEYNODE_H
 
 #include <iostream>
-#include <string>
+#include <vector>
+#include "CoinClasses/hdkeys.h"
+#include "logger.h"
+#include "stringutils.h"
 
-#define LOGLEVEL_INFO 4
-#define LOGLEVEL_DEBUG 3
-#define LOGLEVEL_WARNING 2
-#define LOGLEVEL_ERROR 1
-
-class Logger {
+class KeyNodeSeed : public Coin::HDSeed {
 public:
-    static void setLogLevelInfo() {logLevel_ = LOGLEVEL_INFO;}
-    static void setLogLevelDebug() {logLevel_ = LOGLEVEL_DEBUG;}
-    static void setLogLevelWarning() {logLevel_ = LOGLEVEL_WARNING;}
-    static void setLogLevelError() {logLevel_ = LOGLEVEL_ERROR;}
-    
-    static void info(std::string str) {  if (logLevel_ >= LOGLEVEL_INFO) std::cout << str << std::endl;}
-    static void warning(std::string str) { if (logLevel_ >= LOGLEVEL_DEBUG) std::cout << str << std::endl;}
-    static void debug(std::string str) {  if (logLevel_ >= LOGLEVEL_WARNING) std::cout << str << std::endl;}
-    static void error(std::string str) {  if (logLevel_ >= LOGLEVEL_ERROR) std::cout << str << std::endl;}
-    static void log(std::string str) { std::cout << str << std::endl;}
-private:
-    static unsigned int logLevel_;
-    
+    KeyNodeSeed(const bytes_t& seed) : HDSeed(seed) {}
 };
 
-#endif /* KEYTREE_LOGGER_H */
+class KeyNode : public Coin::HDKeychain {
+public:
+    KeyNode() {}
+    KeyNode(const bytes_t& key, const bytes_t& chain_code, uint32_t child_num = 0, uint32_t parent_fp = 0, uint32_t depth = 0);
+    KeyNode(const bytes_t& extkey);
+    KeyNode(const KeyNode& other);
+    KeyNode getChild(uint32_t i) const;
+    KeyNode getPublic() const;
+    std::string address() const;
+    std::string privkey() const;
+    static void setTestNet(bool enabled);
+private:
+    static std::string secretToASecret(const uchar_vector& secret, bool compressed = false);
+    static std::string public_key_to_bc_address(const uchar_vector& public_key);
+    static uchar_vector hash_160(const uchar_vector& public_key);
+    static std::string hash_160_to_bc_address(const uchar_vector& h160, int addrtype = 0);
+    static std::string encodeBase58Check(const uchar_vector& vchIn);
+};
+
+#endif /* KEYNODE_KEYNODE_H */

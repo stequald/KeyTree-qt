@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include <QApplication>
-#include "keytree/logger.h"
+#include "keynode/logger.h"
 #include <iostream>
 using namespace  std;
 int main(int argc, char *argv[])

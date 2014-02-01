@@ -46,7 +46,7 @@
  
 #include <math.h>
 #include <QtAlgorithms>
-#include "keytree/logger.h"
+#include "keynode/logger.h"
 
 GraphWidget::GraphWidget(QWidget *parent)
   : QGraphicsView(parent), timerId(0)

@@ -46,7 +46,7 @@
 #include "edge.h"
 #include "node.h"
 #include "graphwidget.h"
-#include "keytree/logger.h"
+#include "keynode/logger.h"
 #include <QToolTip>
 
 Node::Node(GraphWidget *graphWidget)
