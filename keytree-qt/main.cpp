@@ -8,8 +8,8 @@ int main(int argc, char *argv[])
     try
     {
         Logger::setLogLevelError();
-        Logger::setLogLevelWarning();
-        Logger::setLogLevelDebug();
+        //Logger::setLogLevelWarning();
+        //Logger::setLogLevelDebug();
         Logger::setLogLevelInfo();
 
 

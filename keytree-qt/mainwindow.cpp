@@ -108,11 +108,11 @@ void MainWindow::outputExtKeysFromSeed(const std::string& seed, const std::strin
     bytes_t k = keyNodeSeed.getMasterKey();
     bytes_t c = keyNodeSeed.getMasterChainCode();
 
-    outputString("Master (hex): " + seedHex);
     KeyNode prv(k, c);
+    TreeChains treeChains = parseChainString(chainStr, prv.isPrivate());
+    outputString("Master (hex): " + seedHex);
     visit(prv, "m", isVerbose);
 
-    TreeChains treeChains = parseChainString(chainStr, prv.isPrivate());
     if (traversalType == TreeTraversal::postorder)
         traversePostorder(prv, treeChains, "m", isVerbose);
     else if (traversalType == TreeTraversal::levelorder) {
@@ -151,17 +151,6 @@ void MainWindow::outputKeyAddressofExtKey(const std::string& extKey, bool isVerb
     visit(keyNode, "___", true);
     if (isVerbose) outputExtraKeyNodeData(keyNode);
     outputString("");
-}
-
-void MainWindow::outputKeyAddressesFromExtKey(const std::string& extKey, uint32_t i_min, uint32_t i_max, const bool isVerbose) {
-    uchar_vector extendedKey(extKeyBase58OrHexToBytes(extKey));
-    KeyNode keyNode(extendedKey);
-    for (uint32_t i = i_min; i < i_max; i++ ) {
-        KeyNode child = keyNode.getChild(i);
-        if (child.isPrivate()) outputString("  * priv key: " + child.privkey());
-        outputString("  * address: " + child.address());
-        outputString("");
-    }
 }
 
 void MainWindow::traversePreorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose) {
@@ -246,18 +235,17 @@ void MainWindow::visit(const KeyNode& keyNode, const std::string& chainName, boo
     if (keyNode.isPrivate()) {
         KeyNode keyNodePub= keyNode.getPublic();
         nodeData += "  * ext pub:  " + toBase58Check(keyNodePub.extkey()) + "\n";
-        nodeData += "  * ext prv:  " + toBase58Check(keyNode.extkey());
-
+        nodeData += "  * ext prv:  " + toBase58Check(keyNode.extkey())+ "\n";
+        nodeData += "  * priv key: " + keyNode.privkey() + "\n";
+        nodeData += "  * address:  " + keyNode.address();
         if (isVerbose) {
-            nodeData += "  * priv key: " + keyNode.privkey() + "\n";
-            nodeData += "  * pub key:  " + toBase58Check(keyNode.pubkey()) + "\n";
-            nodeData += "  * address:  " + keyNode.address() + "\n";
+            nodeData += "\n  * pub key:  " + toBase58Check(keyNode.pubkey()) + "\n";
         } else nodeData += "\n";
     } else {
-        nodeData += "  * ext pub:  " + toBase58Check(keyNode.extkey());
+        nodeData += "  * ext pub:  " + toBase58Check(keyNode.extkey()) + "\n";
+        nodeData += "  * address:  " + keyNode.address();
         if (isVerbose) {
-            nodeData += "  * pub key:  " + toBase58Check(keyNode.pubkey()) + "\n";
-            nodeData += "  * address:  " + keyNode.address() + "\n";
+            nodeData += "\n  * pub key:  " + toBase58Check(keyNode.pubkey()) + "\n";
         } else nodeData += "\n";
     }
 
@@ -390,14 +378,6 @@ void MainWindow::testOutputExtKeysFromExtKey() {
     //outputExtKeysFromExtKey("xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw", "m/0/0"); //pub
 }
 
-void MainWindow::testOutputKeyAddressesFromExtKey() {
-    //outputKeyAddressesFromExtKey("0488ade4013442193e8000000047fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae623614100edb2e14f9ee77d26dd93b4ecede8d16ed408ce149b6cd80b0715a2d911a0afea", 0, 2); //priv
-    //outputKeyAddressesFromExtKey("0488b21e013442193e8000000047fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141035a784662a4a20a65bf6aab9ae98a6c068a81c52e4b032c0fb5400c706cfccc56", 0, 2); //pub
-
-    outputKeyAddressesFromExtKey("xprv9uHRZZhk6KAJC1avXpDAp4MDc3sQKNxDiPvvkX8Br5ngLNv1TxvUxt4cV1rGL5hj6KCesnDYUhd7oWgT11eZG7XnxHrnYeSvkzY7d2bhkJ7", 0, 2); //priv
-    //outputKeyAddressesFromExtKey("xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw", 0, 2); //pub
-}
-
 void MainWindow::testOutputKeyAddressofExtKey() {
     //outputKeyAddressofExtKey("0488ade4013442193e8000000047fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae623614100edb2e14f9ee77d26dd93b4ecede8d16ed408ce149b6cd80b0715a2d911a0afea"); //priv
     //outputKeyAddressofExtKey("0488b21e013442193e8000000047fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141035a784662a4a20a65bf6aab9ae98a6c068a81c52e4b032c0fb5400c706cfccc56"); //pub
@@ -437,7 +417,6 @@ void MainWindow::outputExamples() {
 
 
 void MainWindow::outputString(const std::string& str) {
-    //Logger::log(str);
     QString qtext = qStringFromSTDString(str+"");
     ui->resultsTextEdit->append(qtext);
 }
@@ -455,10 +434,7 @@ MainWindow::MainWindow(QWidget *parent) :
     treeWidget = new GraphWidget;
     ui->formLayout->addWidget(treeWidget);
 
-
-
-    connect( ui->extKeyButton, SIGNAL( clicked() ), this, SLOT(extkeyClicked()) );
-    connect( ui->bitcoinKeyButton, SIGNAL( clicked() ), this, SLOT(bitcoinkeyClicked()) );
+    connect( ui->extKeyButton, SIGNAL( clicked() ), this, SLOT(goClicked()) );
 
     connect( ui->seedLineEdit, SIGNAL( editingFinished() ), this, SLOT( seedEditingFinished()) );
     connect( ui->seedHexLineEdit, SIGNAL( editingFinished() ), this, SLOT( seedHexEditingFinished()) );
@@ -477,16 +453,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QString defaultChain0 = qStringFromSTDString(CUSTOM_CHAIN);
     QString defaultChain1 = qStringFromSTDString("m/0'/0");
-    QString defaultChain2 = qStringFromSTDString("m/0'/0");
-    QString defaultChain3 = qStringFromSTDString("m/0'/0");
+    QString defaultChain2 = qStringFromSTDString("m/1'/1");
+    QString defaultChain3 = qStringFromSTDString("m/0/2");
 
     ui->defaultChainsComboBox->addItem(defaultChain0);
     ui->defaultChainsComboBox->addItem(defaultChain1);
     ui->defaultChainsComboBox->addItem(defaultChain2);
     ui->defaultChainsComboBox->addItem(defaultChain3);
 
-    ui->iMaxLineEdit->setValidator(new QIntValidator(0, INT_MAX, this));
-    ui->iMinLineEdit->setValidator(new QIntValidator(0, INT_MAX, this));
+
     ui->seedRadioButton->setChecked(true);
     seedRadioButtonClicked();
 
@@ -532,11 +507,6 @@ void MainWindow::seedRadioButtonClicked()
 
     ui->seedLineEdit->setEnabled(true);
     ui->seedHexLineEdit->setEnabled(true);
-
-    ui->bitcoinKeyButton->setEnabled(false);
-
-    ui->bitcoinKeyButton->setEnabled(false);
-
 }
 
 void MainWindow::extKeyRadioButtonClicked()
@@ -547,10 +517,6 @@ void MainWindow::extKeyRadioButtonClicked()
     ui->seedHexLineEdit->setEnabled(false);
 
     ui->extKeyLineEdit->setEnabled(true);
-
-
-    ui->bitcoinKeyButton->setEnabled(true);
-
 }
 
 void MainWindow::seedHexEditingFinished()
@@ -570,13 +536,8 @@ void MainWindow::seedEditingFinished()
 void MainWindow::extkeyEditingFinished()
 {
     if (ui->extKeyLineEdit->text().trimmed().isEmpty()) {
-        ui->bitcoinKeyButton->setEnabled(false);
-    }
-    else if(0) {
-
     }
     else {
-        ui->bitcoinKeyButton->setEnabled(true);
     }
 }
 
@@ -585,26 +546,20 @@ void MainWindow::clearTree()
 {
     ui->resultsTextEdit->clear();
     treeWidget->removeAllItem();
+    delete treeWidget;
+    treeWidget = new GraphWidget;
+    ui->formLayout->addWidget(treeWidget);
 }
 
-void MainWindow::extkeyClicked()
+void MainWindow::goClicked()
 {
-    std::string imin =  stdStringFromQString(ui->iMinLineEdit->text());
-    std::string imax =  stdStringFromQString(ui->iMaxLineEdit->text());
     std::string chain =  stdStringFromQString(ui->chainLineEdit->text());
-
-    Logger::debug("*imin: " + imin);
-    Logger::debug("*imax: " + imax);
-    Logger::debug("*chain: " + chain);
 
     if (ui->extKeyRadioButton->isChecked()) {
         std::string extKey =  stdStringFromQString(ui->extKeyLineEdit->text());
-        Logger::debug("*extKey: " + extKey);
-
 
         if (! this->isValidExtKey(extKey)) {
             this->highlightBackgroundRed(ui->extKeyLineEdit);
-
             ui->resultsTextEdit->clear();
             outputString("Error: Invalid extKey");
             return;
@@ -613,25 +568,23 @@ void MainWindow::extkeyClicked()
         this->clearTree();
 
         try {
-
-
-            this->outputExtKeysFromExtKey(extKey, chain);
+            if (chain != "") {
+                this->outputExtKeysFromExtKey(extKey, chain);
+            } else {
+                this->outputKeyAddressofExtKey(extKey);
+            }
         } catch (const std::runtime_error& err) {
             outputString("Error: " + std::string(err.what()));
         }
-
-
-
     }
     else if (ui->seedRadioButton->isChecked()) {
-        std::string seed =  stdStringFromQString(ui->seedLineEdit->text());
         std::string seedHex =  stdStringFromQString(ui->seedHexLineEdit->text());
-        Logger::debug("*seed: " + seed);
-        Logger::debug("*seedHex: " + seedHex);
-
         this->clearTree();
+
         try {
-            this->outputExtKeysFromSeed(seedHex, chain, StringUtils::hex);
+            if (chain != "") {
+                this->outputExtKeysFromSeed(seedHex, chain, StringUtils::hex);
+            }
         } catch (const std::runtime_error& err) {
             outputString("Error: " + std::string(err.what()));
         }
@@ -647,50 +600,6 @@ bool MainWindow::isValidExtKey(const std::string extKey)
 
     return true;
 }
-
-void MainWindow::bitcoinkeyClicked()
-{
-    QToolTip::showText(ui->iMaxLineEdit->mapToGlobal(QPoint()), "A tool tip");
-
-    std::string extKey =  stdStringFromQString(ui->extKeyLineEdit->text());
-
-    if (! this->isValidExtKey(extKey)) {
-        this->highlightBackgroundRed(ui->extKeyLineEdit);
-
-        ui->resultsTextEdit->clear();
-        outputString("Error: Invalid extKey");
-        return;
-    }
-    this->unHighlightAllTextEditsBackground();
-
-
-    if (ui->iMinLineEdit->text().trimmed().isEmpty()) {
-        QString imin = qStringFromSTDString(DEFAULT_I_MIN);
-        ui->iMinLineEdit->setText(imin);
-    }
-    if (ui->iMaxLineEdit->text().trimmed().isEmpty()) {
-        QString imax = qStringFromSTDString(DEFAULT_I_MAX);
-        ui->iMaxLineEdit->setText(imax);
-    }
-
-    std::string imin =  stdStringFromQString(ui->iMinLineEdit->text());
-    std::string imax =  stdStringFromQString(ui->iMaxLineEdit->text());
-
-    ui->resultsTextEdit->clear();
-
-    try {
-
-        std::cout << std::atoi(imin.c_str()) << endl;
-        this->outputKeyAddressesFromExtKey(extKey, std::atoi(imin.c_str()), std::atoi(imax.c_str()));
-
-    } catch (const std::runtime_error& err) {
-        outputString("Error: " + std::string(err.what()));
-    }
-
-}
-
-
-
 
 MainWindow::~MainWindow()
 {

@@ -44,34 +44,18 @@ public:
     std::string stdStringFromQString(QString str);
     QString qStringFromSTDString(std::string str);
 
-
     void outputExamples();
     void outputString(const std::string& str);
-    //int handle_arguments(std::map<std::string, std::string> argsDict);
 
-    /*
-    void visit(const KeyNode& keyNode, const std::string& chainName, bool isVerbose = false);
-    static TreeChains parseChainString(const std::string& chainStr, bool isPrivate = true);
-    void outputExtKeysFromSeed(const std::string& seed, const std::string& chainStr, StringUtils::StringFormat seedStringFormat, TreeTraversal::Type traversalType = defaultTreeTraversalType, bool isVerbose = false);
-    void outputExtKeysFromExtKey(const std::string& extKey, const std::string& chainStr, TreeTraversal::Type traversalType = defaultTreeTraversalType, bool isVerbose = false);
-    void outputKeyAddressesFromExtKey(const std::string& extKey, uint32_t i_min = 0, uint32_t i_max = 9, bool isVerbose = false);
-    void outputKeyAddressofExtKey(const std::string& extKey, bool isVerbose = false);
-    void traversePreorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose = false);
-    void traversePostorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose = false);
-    //*/
-    //*
     void traverseLevelorder(const KeyNode& keyNode, const TreeChains& treeChains, const std::string& chainName,
                             uint64_t level, std::deque<KeyNode>& keyNodeDeq,
                             std::deque<std::pair<uint64_t,std::string>>& levelNChainDeq,
                             bool isVerbose = false);
-                            //*/
-
     void visit(const KeyNode& keyNode, const std::string& chainName, bool isVerbose);
     TreeChains parseChainString(const std::string& chainStr, bool isPrivate);
 
     void outputExtKeysFromSeed(const std::string& seed, const std::string& chainStr, StringUtils::StringFormat seedStringFormat, TreeTraversal::Type traversalType = defaultTreeTraversalType, bool isVerbose = false);
     void outputExtKeysFromExtKey(const std::string& extKey, const std::string& chainStr, TreeTraversal::Type traversalType = defaultTreeTraversalType, bool isVerbose = false);
-    void outputKeyAddressesFromExtKey(const std::string& extKey, uint32_t i_min = 0, uint32_t i_max = 9, bool isVerbose = false);
     void outputKeyAddressofExtKey(const std::string& extKey, bool isVerbose = false);
 
     void traversePreorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose);
@@ -102,8 +86,7 @@ public slots:
     void extKeyRadioButtonClicked();
     void defaultChainsComboBoxActivated(int idx);
 
-    void extkeyClicked();
-    void bitcoinkeyClicked();
+    void goClicked();
 
     void seedEditingFinished();
     void seedHexEditingFinished();

@@ -40,38 +40,12 @@
      <string/>
     </property>
    </widget>
-   <widget class="QLineEdit" name="iMinLineEdit">
-    <property name="geometry">
-     <rect>
-      <x>230</x>
-      <y>230</y>
-      <width>71</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="iMaxLineEdit">
-    <property name="geometry">
-     <rect>
-      <x>370</x>
-      <y>230</y>
-      <width>71</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
    <widget class="QComboBox" name="defaultChainsComboBox">
     <property name="geometry">
      <rect>
       <x>360</x>
       <y>180</y>
-      <width>78</width>
+      <width>91</width>
       <height>27</height>
      </rect>
     </property>
@@ -79,27 +53,14 @@
    <widget class="QPushButton" name="extKeyButton">
     <property name="geometry">
      <rect>
-      <x>240</x>
-      <y>280</y>
-      <width>101</width>
+      <x>320</x>
+      <y>240</y>
+      <width>131</width>
       <height>27</height>
      </rect>
     </property>
     <property name="text">
-     <string>Extended Keys</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="bitcoinKeyButton">
-    <property name="geometry">
-     <rect>
-      <x>350</x>
-      <y>280</y>
-      <width>98</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Bitcoin Keys</string>
+     <string>Go</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="extKeyLineEdit">
@@ -152,32 +113,6 @@
     </property>
     <property name="text">
      <string>Ext Key:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>230</y>
-      <width>66</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>i min:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_5">
-    <property name="geometry">
-     <rect>
-      <x>310</x>
-      <y>230</y>
-      <width>66</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>i max:</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="chainLineEdit">
@@ -284,7 +219,7 @@
      <x>0</x>
      <y>0</y>
      <width>1074</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
