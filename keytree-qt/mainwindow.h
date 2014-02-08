@@ -72,12 +72,6 @@ public:
 
     void testVector1();
     void testVector2();
-    void testOutputExtKeysFromSeed();
-    void testOutputExtKeysFromExtKey();
-    void testOutputKeyAddressesFromExtKey();
-    void testOutputKeyAddressofExtKey();
-
-
 public slots:
     void highlightBackgroundRed(QLineEdit* lineEdit);
     void unHighlightBackground(QLineEdit* lineEdit);
