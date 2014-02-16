@@ -29,6 +29,7 @@ namespace TreeTraversal {
 }
 
 static const TreeTraversal::Type defaultTreeTraversalType = TreeTraversal::preorder;
+static const uint32_t NODE_IDX_M = -1;
 
 namespace Ui {
 class MainWindow;
