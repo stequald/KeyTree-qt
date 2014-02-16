@@ -87,8 +87,16 @@ static const std::string exampleArg14 = " -seed.hex \"000102030405060708090a0b0c
 static const std::string exampleArg15 = " -verbose -s.h \"000102030405060708090a0b0c0d0e0f\" -chain \"m/0'/(3-4)'/6'\"";
 static const std::string exampleArg16 = " -v -ek \"xprv9uHRZZhk6KAJC1avXpDAp4MDc3sQKNxDiPvvkX8Br5ngLNv1TxvUxt4cV1rGL5hj6KCesnDYUhd7oWgT11eZG7XnxHrnYeSvkzY7d2bhkJ7\"";
 static const std::string CUSTOM_CHAIN = "Custom";
+static const std::string NO_CHAIN = "None";
 static const std::string DEFAULT_I_MIN = "0";
 static const std::string DEFAULT_I_MAX = "4";
+
+static const std::vector<std::string> defaultChains({NO_CHAIN,
+                                                     CUSTOM_CHAIN,
+                                                     "m/0'/(0-1)",
+                                                     "m/0'/0",
+                                                     "m/1'/1",
+                                                     "m/0/2"});
 
 void MainWindow::outputExtKeysFromSeed(const std::string& seed, const std::string& chainStr,
                            StringUtils::StringFormat seedStringFormat, TreeTraversal::Type traversalType,
@@ -111,17 +119,23 @@ void MainWindow::outputExtKeysFromSeed(const std::string& seed, const std::strin
     KeyNode prv(k, c);
     TreeChains treeChains = parseChainString(chainStr, prv.isPrivate());
     outputString("Master (hex): " + seedHex);
-    visit(prv, "m", isVerbose);
+
+    Node* leaf = NULL;
+    if (traversalType != TreeTraversal::levelorder) // traverseLevelorder already visits root
+        leaf = visit(prv, "m", isVerbose);
+             //visit(keyNode, chainName, isVerbose, leaf);
 
     if (traversalType == TreeTraversal::postorder)
-        traversePostorder(prv, treeChains, "m", isVerbose);
+        traversePostorder(prv, treeChains, "m", isVerbose, leaf);
     else if (traversalType == TreeTraversal::levelorder) {
         std::deque<KeyNode> KeyNodeDeq;
         std::deque<std::pair<uint64_t,std::string>> levelNChainDeq;
-        traverseLevelorder(prv, treeChains, "m", 0, KeyNodeDeq, levelNChainDeq, isVerbose);
+        std::deque<Node*> graphNodeDeq;
+        //graphNodeDeq.push_back(leaf);
+        traverseLevelorder(prv, treeChains, "m", 0, KeyNodeDeq, levelNChainDeq, graphNodeDeq, NULL, isVerbose);
     }
     else
-        traversePreorder(prv, treeChains, "m", isVerbose);
+        traversePreorder(prv, treeChains, "m", isVerbose, leaf);
 }
 
 void MainWindow::outputExtKeysFromExtKey(const std::string& extKey, const std::string& chainStr,
@@ -130,19 +144,21 @@ void MainWindow::outputExtKeysFromExtKey(const std::string& extKey, const std::s
     KeyNode keyNode(extendedKey);
     TreeChains treeChains = parseChainString(chainStr, keyNode.isPrivate());
 
+    Node* leaf = NULL;
     if (traversalType != TreeTraversal::levelorder) // traverseLevelorder already visits root
-        visit(keyNode, "___", isVerbose);
+        leaf = visit(keyNode, "___", isVerbose);
 
     if (isVerbose) outputExtraKeyNodeData(keyNode);
 
     if (traversalType == TreeTraversal::postorder)
-        traversePostorder(keyNode, treeChains, "___", isVerbose);
+        traversePostorder(keyNode, treeChains, "___", isVerbose, leaf);
     else if (traversalType == TreeTraversal::levelorder) {
         std::deque<KeyNode> KeyNodeDeq;
         std::deque<std::pair<uint64_t,std::string>> levelNChainDeq;
-        traverseLevelorder(keyNode, treeChains, "___", 0, KeyNodeDeq, levelNChainDeq, isVerbose);
+        std::deque<Node*> graphNodeDeq;
+        traverseLevelorder(keyNode, treeChains, "___", 0, KeyNodeDeq, levelNChainDeq, graphNodeDeq, NULL, isVerbose);
     } else
-        traversePreorder(keyNode, treeChains, "___", isVerbose);
+        traversePreorder(keyNode, treeChains, "___", isVerbose, leaf);
 }
 
 void MainWindow::outputKeyAddressofExtKey(const std::string& extKey, bool isVerbose) {
@@ -153,7 +169,7 @@ void MainWindow::outputKeyAddressofExtKey(const std::string& extKey, bool isVerb
     outputString("");
 }
 
-void MainWindow::traversePreorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose) {
+void MainWindow::traversePreorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose, Node* currentLeft) {
     if (! treeChains.empty()) {
         IsPrivateNPathRange isPrivateNPathRange = treeChains.front();
         treeChains.pop_front();
@@ -167,13 +183,14 @@ void MainWindow::traversePreorder(const KeyNode& keyNode, TreeChains treeChains,
             if (isPrivate) k = toPrime(k);
             std::string childChainName = chainName + "/" + iToString(k);
             KeyNode childNode = keyNode.getChild(k);
-            visit(childNode, childChainName, isVerbose);
-            traversePreorder(childNode, treeChains, childChainName, isVerbose);
+            Logger::debug("traversePreorder");
+            Node* leaf = visit(childNode, childChainName, isVerbose, currentLeft);
+            traversePreorder(childNode, treeChains, childChainName, isVerbose, leaf);
         }
     }
 }
 
-void MainWindow::traversePostorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose) {
+void MainWindow::traversePostorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose, Node* currentLeft) {
     if (! treeChains.empty()) {
         IsPrivateNPathRange isPrivateNPathRange = treeChains.front();
         treeChains.pop_front();
@@ -187,16 +204,53 @@ void MainWindow::traversePostorder(const KeyNode& keyNode, TreeChains treeChains
             if (isPrivate) k = toPrime(k);
             std::string childChainName = chainName + "/" + iToString(k);
             KeyNode childNode = keyNode.getChild(k);
-            traversePostorder(childNode, treeChains, childChainName, isVerbose);
-            visit(childNode, childChainName, isVerbose);
+
+
+
+            std::string nodeData("");
+            nodeData += "* [Chain " + chainName + "]\n";
+            if (keyNode.isPrivate()) {
+                KeyNode keyNodePub= keyNode.getPublic();
+                nodeData += "  * ext pub:  " + toBase58Check(keyNodePub.extkey()) + "\n";
+                nodeData += "  * ext prv:  " + toBase58Check(keyNode.extkey())+ "\n";
+                nodeData += "  * priv key: " + keyNode.privkey() + "\n";
+                nodeData += "  * address:  " + keyNode.address();
+                if (isVerbose) {
+                    nodeData += "\n  * pub key:  " + toBase58Check(keyNode.pubkey()) + "\n";
+                } else nodeData += "\n";
+            } else {
+                nodeData += "  * ext pub:  " + toBase58Check(keyNode.extkey()) + "\n";
+                nodeData += "  * address:  " + keyNode.address();
+                if (isVerbose) {
+                    nodeData += "\n  * pub key:  " + toBase58Check(keyNode.pubkey()) + "\n";
+                } else nodeData += "\n";
+            }
+
+            //outputString(nodeData);
+            QString nodeDescription = this->qStringFromSTDString(nodeData);
+            Node* leaf = this->treeWidget->addItem(nodeDescription, currentLeft);
+
+
+
+            traversePostorder(childNode, treeChains, childChainName, isVerbose, leaf);
+
+
+            //Node* leaf = visit(childNode, childChainName, isVerbose, currentLeft);
+            outputString(nodeData);
+
+
+
         }
     }
 }
 
 void MainWindow::traverseLevelorder(const KeyNode& keyNode, const TreeChains& treeChains, const std::string& chainName,
-                        uint64_t level, std::deque<KeyNode>& keyNodeDeq,
-                        std::deque<std::pair<uint64_t,std::string>>& levelNChainDeq,
-                        bool isVerbose) {
+                                    uint64_t level, std::deque<KeyNode>& keyNodeDeq,
+                                    std::deque<std::pair<uint64_t,std::string>>& levelNChainDeq,
+                                    std::deque<Node*>& graphNodeDeq, Node* leaf,
+                                    bool isVerbose) {
+
+    uint32_t childCount = 0;
     if (level < treeChains.size()) {
         IsPrivateNPathRange isPrivateNPathRange = treeChains.at(level);
         bool isPrivate = isPrivateNPathRange.first;
@@ -213,10 +267,16 @@ void MainWindow::traverseLevelorder(const KeyNode& keyNode, const TreeChains& tr
 
             keyNodeDeq.push_back(childNode);
             levelNChainDeq.push_back(std::pair<uint64_t,std::string>(level,childChainName));
+
+            childCount++;
         }
     }
 
-    visit(keyNode, chainName, isVerbose);
+    Logger::debug("traverseLevelorder");
+    Node* newLeaf = visit(keyNode, chainName, isVerbose, leaf);
+    for (uint32_t i = 0; i < childCount; ++i) {
+        graphNodeDeq.push_back(newLeaf);
+    }
 
     if (! keyNodeDeq.empty()) {
         std::pair<uint64_t,std::string> pair = levelNChainDeq.front();
@@ -225,11 +285,15 @@ void MainWindow::traverseLevelorder(const KeyNode& keyNode, const TreeChains& tr
         KeyNode node = keyNodeDeq.front();
         keyNodeDeq.pop_front();
         levelNChainDeq.pop_front();
-        traverseLevelorder(node, treeChains, cc, lev, keyNodeDeq, levelNChainDeq, isVerbose);
+
+        Node*leaf = graphNodeDeq.front();
+        graphNodeDeq.pop_front();
+
+        traverseLevelorder(node, treeChains, cc, lev, keyNodeDeq, levelNChainDeq, graphNodeDeq, leaf, isVerbose);
     }
 }
 
-void MainWindow::visit(const KeyNode& keyNode, const std::string& chainName, bool isVerbose) {
+Node* MainWindow::visit(const KeyNode& keyNode, const std::string& chainName, bool isVerbose, Node* currentLeft) {
     std::string nodeData("");
     nodeData += "* [Chain " + chainName + "]\n";
     if (keyNode.isPrivate()) {
@@ -251,7 +315,8 @@ void MainWindow::visit(const KeyNode& keyNode, const std::string& chainName, boo
 
     outputString(nodeData);
     QString nodeDescription =  this->qStringFromSTDString(nodeData);
-    this->treeWidget->addItem(nodeDescription, 0, 0, 0);
+    Node* leaf = this->treeWidget->addItem(nodeDescription, currentLeft);
+    return leaf;
 }
 
 void MainWindow::outputExtraKeyNodeData(const KeyNode& keyNode) {
@@ -356,10 +421,14 @@ IsPrivateNPathRange MainWindow::parseRange(const std::string node, bool isPrivat
 }
 
 void MainWindow::testVector1() {
-    outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/1/2'/2/1000000000", StringUtils::StringFormat::hex);
+    this->clearTree();
+    //outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/1/2'/2/1000000000", StringUtils::StringFormat::hex);
+    //outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/1/(2-3)'", StringUtils::StringFormat::hex);
+    outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/(3-4)'/6'", StringUtils::StringFormat::hex);
 }
 
 void MainWindow::testVector2() {
+    this->clearTree();
     std::string seed = "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542";
     outputExtKeysFromSeed(seed, "m/0/2147483647'/1/2147483646'/2", StringUtils::StringFormat::hex);
 }
@@ -428,16 +497,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect( ui->defaultChainsComboBox, SIGNAL( currentIndexChanged(int) ), this, SLOT( defaultChainsComboBoxActivated(int)) );
 
 
-    QString defaultChain0 = qStringFromSTDString(CUSTOM_CHAIN);
-    QString defaultChain1 = qStringFromSTDString("m/0'/0");
-    QString defaultChain2 = qStringFromSTDString("m/1'/1");
-    QString defaultChain3 = qStringFromSTDString("m/0/2");
-
-    ui->defaultChainsComboBox->addItem(defaultChain0);
-    ui->defaultChainsComboBox->addItem(defaultChain1);
-    ui->defaultChainsComboBox->addItem(defaultChain2);
-    ui->defaultChainsComboBox->addItem(defaultChain3);
-
+    for(std::string chain : defaultChains) {
+        ui->defaultChainsComboBox->addItem(qStringFromSTDString(chain));
+    }
 
     ui->seedRadioButton->setChecked(true);
     seedRadioButtonClicked();
@@ -452,7 +514,8 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::defaultChainsComboBoxActivated(int idx)
 {
     QString chain(ui->defaultChainsComboBox->itemText(idx));
-    if (stdStringFromQString(chain)  == CUSTOM_CHAIN)
+    std::string chainStr = stdStringFromQString(chain);
+    if (chainStr == CUSTOM_CHAIN || chainStr == NO_CHAIN)
         ui->chainLineEdit->setText("");
     else
         ui->chainLineEdit->setText(chain);

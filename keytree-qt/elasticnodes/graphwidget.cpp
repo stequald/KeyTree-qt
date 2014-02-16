@@ -112,38 +112,40 @@ GraphWidget::GraphWidget(QWidget *parent)
   node7->setPos(-50, 50);
   node8->setPos(0, 50);
   node9->setPos(50, 50);
+
+
+
   //*/
-  Node *node1 = new Node(this);
-  scene->addItem(node1);
-  node1->setPos(-50, -50);
-  this->currentLeaf = node1;
+  this->root = NULL;
 }
 
-void GraphWidget::addItem(QString nodeDescription, int i, int j, int k)
-{
-
-    /*
-    Node* currentLeaf = this->kjiLeafNodes[i][j][k];
+Node* GraphWidget::addItem(QString nodeDescription, Node* currentLeaf) {
+    std::string nodeDesc = nodeDescription.toUtf8().constData();
+    Logger::log("addItem: " + nodeDesc);
+    //Logger::log("nodeDescription: " + nodeDesc);
+    if (! this->root) {
+        Node *node1 = new Node(this, nodeDescription);
+        scene->addItem(node1);
+        node1->setPos(-50, -50);
+        this->root = node1;
+        return node1;
+    }
     Node *newLeaf = new Node(this, nodeDescription);
-    this->kjiLeafNodes[i][j][k] = newLeaf;
-
-    scene->addItem(newLeaf);
-    scene->addItem(new Edge(currentLeaf, newLeaf));
-    //*/
-
-    Node *newLeaf = new Node(this, nodeDescription);
     scene->addItem(newLeaf);
 
-    //if (this->currentLeaf != NULL) {
-        Logger::log("newedge");
-        scene->addItem(new Edge(newLeaf, this->currentLeaf));
-        Logger::log("newedge" + std::to_string(this->currentLeaf->pos().y()));
+    if (currentLeaf == NULL) {
+        Logger::log("currentLeaf__this__root");
+        currentLeaf = this->root;
+    }
 
-        newLeaf->setPos(-50, this->currentLeaf->pos().y()+20);
+    //Logger::log("newedge_before_addItem");
+    scene->addItem(new Edge(newLeaf, currentLeaf));
+    //Logger::log("newedge_after_addItem");
+    //Logger::log("newedge" + std::to_string(currentLeaf->pos().y()));
 
-        //} else Logger::log("no__edge");
-
-    this->currentLeaf = newLeaf;
+    newLeaf->setPos(-50, currentLeaf->pos().y()+20);
+    currentLeaf = newLeaf;
+    return newLeaf;
 }
 
 void GraphWidget::removeAllItem()

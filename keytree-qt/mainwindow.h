@@ -28,7 +28,9 @@ namespace TreeTraversal {
     };
 }
 
-static const TreeTraversal::Type defaultTreeTraversalType = TreeTraversal::preorder;
+//static const TreeTraversal::Type defaultTreeTraversalType = TreeTraversal::preorder;
+//static const TreeTraversal::Type defaultTreeTraversalType = TreeTraversal::levelorder;
+static const TreeTraversal::Type defaultTreeTraversalType = TreeTraversal::postorder;
 
 namespace Ui {
 class MainWindow;
@@ -50,16 +52,17 @@ public:
     void traverseLevelorder(const KeyNode& keyNode, const TreeChains& treeChains, const std::string& chainName,
                             uint64_t level, std::deque<KeyNode>& keyNodeDeq,
                             std::deque<std::pair<uint64_t,std::string>>& levelNChainDeq,
-                            bool isVerbose = false);
-    void visit(const KeyNode& keyNode, const std::string& chainName, bool isVerbose);
+                            std::deque<Node*>& graphNodeDeq,
+                            Node* leaf = NULL, bool isVerbose = false);
+    Node* visit(const KeyNode& keyNode, const std::string& chainName, bool isVerbose, Node* currentLeft = NULL);
     TreeChains parseChainString(const std::string& chainStr, bool isPrivate);
 
     void outputExtKeysFromSeed(const std::string& seed, const std::string& chainStr, StringUtils::StringFormat seedStringFormat, TreeTraversal::Type traversalType = defaultTreeTraversalType, bool isVerbose = false);
     void outputExtKeysFromExtKey(const std::string& extKey, const std::string& chainStr, TreeTraversal::Type traversalType = defaultTreeTraversalType, bool isVerbose = false);
     void outputKeyAddressofExtKey(const std::string& extKey, bool isVerbose = false);
 
-    void traversePreorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose);
-    void traversePostorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose);
+    void traversePreorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose, Node* currentLeft = NULL);
+    void traversePostorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose, Node* currentLeft = NULL);
 
     void outputExtraKeyNodeData(const KeyNode& keyNode);
     std::string iToString(uint32_t i);

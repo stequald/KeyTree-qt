@@ -54,7 +54,8 @@ class GraphWidget : public QGraphicsView
 
   void itemMoved();
   void removeAllItem();
-  void addItem(QString nodeDescription, int i, int j, int k);
+  Node* addItem(QString nodeDescription, Node* currentLeaf = NULL);
+  Node* getRoot();
 
  protected:
   void keyPressEvent(QKeyEvent *event);
@@ -70,8 +71,7 @@ class GraphWidget : public QGraphicsView
 
   QGraphicsScene *scene;
   std::vector<std::vector<std::vector<Node*>>> kjiLeafNodes;
-  Node* currentLeaf;
-
+  Node* root;
 };
  
 #endif
