@@ -48,8 +48,9 @@
 #include "node.h"
 #include "graphwidget.h"
 
-Node::Node(GraphWidget *graphWidget, QString nodeDescription)
-  : graph(graphWidget)
+Node::Node(GraphWidget *graphWidget, QString nodeDescription,
+     QColor primaryColor, QColor secondaryColor)
+    : graph(graphWidget), primaryColor(primaryColor), secondaryColor(secondaryColor)
 {
     setFlag(ItemIsMovable);
     setFlag(ItemSendsGeometryChanges);
@@ -59,6 +60,7 @@ Node::Node(GraphWidget *graphWidget, QString nodeDescription)
     setAcceptHoverEvents(true);
     setToolTip(nodeDescription);
     QToolTip::setFont(QFont ("Helvetica", 8));
+
 }
 
 void Node::addEdge(Edge *edge)
@@ -151,11 +153,11 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     if (option->state & QStyle::State_Sunken)  {
         gradient.setCenter(3, 3);
         gradient.setFocalPoint(3, 3);
-        gradient.setColorAt(1, QColor(Qt::yellow).light(120));
-        gradient.setColorAt(0, QColor(Qt::darkYellow).light(120));
+        gradient.setColorAt(1, QColor(this->primaryColor).light(120));
+        gradient.setColorAt(0, QColor(this->secondaryColor).light(120));
     } else  {
-        gradient.setColorAt(0, Qt::yellow);
-        gradient.setColorAt(1, Qt::darkYellow);
+        gradient.setColorAt(0, this->primaryColor);
+        gradient.setColorAt(1, this->secondaryColor);
     }
     painter->setBrush(gradient);
     painter->setPen(QPen(Qt::black, 0));

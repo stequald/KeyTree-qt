@@ -62,18 +62,19 @@ GraphWidget::GraphWidget(QWidget *parent)
     this->root = NULL;
 }
 
-Node* GraphWidget::addItem(QString nodeDescription, Node* currentLeaf)
+Node* GraphWidget::addItem(QString nodeDescription, QColor nodePrimaryColor, QColor nodePecondaryColor,
+                           Node* currentLeaf)
 {
     if (! this->root)
     {
-        Node *node1 = new Node(this, nodeDescription);
+        Node *node1 = new Node(this, nodeDescription, nodePrimaryColor, nodePecondaryColor);
         scene->addItem(node1);
         node1->setPos(-50, -50);
         this->root = node1;
         return node1;
     }
 
-    Node *newLeaf = new Node(this, nodeDescription);
+    Node *newLeaf = new Node(this, nodeDescription, nodePrimaryColor, nodePecondaryColor);
     scene->addItem(newLeaf);
 
     if (currentLeaf == NULL)

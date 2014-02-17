@@ -63,7 +63,8 @@ public:
                             std::deque<Node*>& graphNodeDeq,
                             Node* leaf = NULL, bool isVerbose = false);
 
-    Node* visit(const KeyNode& keyNode, const std::string& chainName, bool isVerbose, Node* currentLeft = NULL);
+    Node* visit(const KeyNode& keyNode, const std::string& chainName, bool isVerbose,
+                QColor nodePrimaryColor, QColor nodeSecondaryColor, Node* currentLeft = NULL);
     std::string getNodeDataString(const KeyNode& keyNode, const std::string& chainName, bool isVerbose);
     void outputExtraKeyNodeData(const KeyNode& keyNode);
     TreeChains parseChainString(const std::string& chainStr, bool isPrivate);

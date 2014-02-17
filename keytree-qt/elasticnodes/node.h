@@ -51,7 +51,8 @@ class QGraphicsSceneMouseEvent;
 class Node : public QGraphicsItem
 {
 public:
-    Node(GraphWidget *graphWidget, QString nodeDescription);
+    Node(GraphWidget *graphWidget, QString nodeDescription,
+         QColor primaryColor = Qt::yellow, QColor secondaryColor = Qt::darkYellow);
 
     void addEdge(Edge *edge);
     QList<Edge *> edges() const;
@@ -77,6 +78,8 @@ private:
     QList<Edge *> edgeList;
     QPointF newPos;
     GraphWidget *graph;
+    QColor primaryColor;
+    QColor secondaryColor;
 };
  
 #endif

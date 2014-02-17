@@ -54,7 +54,8 @@ public:
 
     void itemMoved();
     void removeAllItem();
-    Node* addItem(QString nodeDescription, Node* currentLeaf = NULL);
+    Node* addItem(QString nodeDescription, QColor nodePrimaryColor, QColor nodePecondaryColor,
+                  Node* currentLeaf = NULL);
     Node* getRoot();
 
 protected:

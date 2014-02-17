@@ -89,6 +89,11 @@ static const std::string NO_CHAIN = "None";
 static const std::string DEFAULT_I_MIN = "0";
 static const std::string DEFAULT_I_MAX = "4";
 
+static const QColor ROOT_NODE_PRIMARY_COLOR = Qt::blue;
+static const QColor ROOT_NODE_SECONDARY_COLOR = Qt::darkBlue;
+static const QColor NODE_PRIMARY_COLOR = Qt::yellow;
+static const QColor NODE_SECONDARY_COLOR = Qt::darkYellow;
+
 static const std::vector<std::string> defaultChains({NO_CHAIN,
                                                      CUSTOM_CHAIN,
                                                      "m/0'/(0-1)",
@@ -155,7 +160,7 @@ void MainWindow::outputExtKeysFromExtKey(const std::string& extKey, const std::s
 void MainWindow::outputKeyAddressofExtKey(const std::string& extKey, bool isVerbose) {
     uchar_vector extendedKey(extKeyBase58OrHexToBytes(extKey));
     KeyNode keyNode(extendedKey);
-    visit(keyNode, "___", true);
+    visit(keyNode, "___", true, ROOT_NODE_PRIMARY_COLOR, ROOT_NODE_SECONDARY_COLOR);
     if (isVerbose) outputExtraKeyNodeData(keyNode);
     outputString("");
 }
@@ -171,7 +176,7 @@ void MainWindow::traversePreorder(const KeyNode& keyNode, TreeChains treeChains,
         uint32_t max = range.second;
 
         if (min == NODE_IDX_M && max == NODE_IDX_M) {
-            visit(keyNode, "m", isVerbose);
+            visit(keyNode, "m", isVerbose, ROOT_NODE_PRIMARY_COLOR, ROOT_NODE_SECONDARY_COLOR);
            traversePreorder(keyNode, treeChains, chainName, isVerbose);
         } else {
             for (uint32_t i = min; i <= max; ++i) {
@@ -179,7 +184,8 @@ void MainWindow::traversePreorder(const KeyNode& keyNode, TreeChains treeChains,
                 if (isPrivate) k = toPrime(k);
                 std::string childChainName = chainName + "/" + iToString(k);
                 KeyNode childNode = keyNode.getChild(k);
-                Node* leaf = visit(childNode, childChainName, isVerbose, currentLeft);
+                Node* leaf = visit(childNode, childChainName, isVerbose,
+                                   NODE_PRIMARY_COLOR, NODE_SECONDARY_COLOR, currentLeft);
                 traversePreorder(childNode, treeChains, childChainName, isVerbose, leaf);
             }
         }
@@ -199,7 +205,8 @@ void MainWindow::traversePostorder(const KeyNode& keyNode, TreeChains treeChains
         if (min == NODE_IDX_M && max == NODE_IDX_M) {
             std::string nodeData(this->getNodeDataString(keyNode, "m", isVerbose));
             QString nodeDescription =  this->qStringFromSTDString(nodeData);
-            Node* leaf = this->treeWidget->addItem(nodeDescription, currentLeft);
+            Node* leaf = this->treeWidget->addItem(nodeDescription, ROOT_NODE_PRIMARY_COLOR,
+                                                   ROOT_NODE_SECONDARY_COLOR, currentLeft);
             traversePostorder(keyNode, treeChains, chainName, isVerbose, leaf);
             outputString(nodeData);
         } else {
@@ -211,7 +218,8 @@ void MainWindow::traversePostorder(const KeyNode& keyNode, TreeChains treeChains
 
                 std::string nodeData(this->getNodeDataString(childNode, childChainName, isVerbose));
                 QString nodeDescription =  this->qStringFromSTDString(nodeData);
-                Node* leaf = this->treeWidget->addItem(nodeDescription, currentLeft);
+                Node* leaf = this->treeWidget->addItem(nodeDescription, NODE_PRIMARY_COLOR,
+                                                       NODE_SECONDARY_COLOR, currentLeft);
                 traversePostorder(childNode, treeChains, childChainName, isVerbose, leaf);
                 outputString(nodeData);
             }
@@ -248,7 +256,18 @@ void MainWindow::traverseLevelorder(const KeyNode& keyNode, const TreeChains& tr
         }
     }
 
-    Node* newLeaf = visit(keyNode, chainName, isVerbose, leaf);
+   QColor nodePrimaryColor;
+   QColor nodeSecondaryColor;
+    if (level != 1) {
+        nodePrimaryColor = NODE_PRIMARY_COLOR;
+        nodeSecondaryColor = NODE_SECONDARY_COLOR;
+    }
+    else {
+        nodePrimaryColor = ROOT_NODE_PRIMARY_COLOR;
+        nodeSecondaryColor = ROOT_NODE_SECONDARY_COLOR;
+    }
+    Node* newLeaf = visit(keyNode, chainName, isVerbose, nodePrimaryColor, nodeSecondaryColor, leaf);
+
     for (uint32_t i = 0; i < childCount; ++i) {
         graphNodeDeq.push_back(newLeaf);
     }
@@ -270,11 +289,12 @@ void MainWindow::traverseLevelorder(const KeyNode& keyNode, const TreeChains& tr
 }
 
 Node* MainWindow::visit(const KeyNode& keyNode, const std::string& chainName,
-                        bool isVerbose, Node* currentLeft) {
+                        bool isVerbose, QColor nodePrimaryColor, QColor nodeSecondaryColor, Node* currentLeft) {
     std::string nodeData(this->getNodeDataString(keyNode, chainName, isVerbose));
     outputString(nodeData);
     QString nodeDescription =  this->qStringFromSTDString(nodeData);
-    Node* leaf = this->treeWidget->addItem(nodeDescription, currentLeft);
+    Node* leaf = this->treeWidget->addItem(nodeDescription,
+                                           nodePrimaryColor, nodeSecondaryColor, currentLeft);
     return leaf;
 }
 
