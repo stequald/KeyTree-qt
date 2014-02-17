@@ -49,29 +49,29 @@ class GraphWidget : public QGraphicsView
 {
     Q_OBJECT
 
-      public:
-  GraphWidget(QWidget *parent = 0);
+public:
+    GraphWidget(QWidget *parent = 0);
 
-  void itemMoved();
-  void removeAllItem();
-  Node* addItem(QString nodeDescription, Node* currentLeaf = NULL);
-  Node* getRoot();
+    void itemMoved();
+    void removeAllItem();
+    Node* addItem(QString nodeDescription, Node* currentLeaf = NULL);
+    Node* getRoot();
 
- protected:
-  void keyPressEvent(QKeyEvent *event);
-  void timerEvent(QTimerEvent *event);
-  void wheelEvent(QWheelEvent *event);
-  void drawBackground(QPainter *painter, const QRectF &rect);
+protected:
+    void keyPressEvent(QKeyEvent *event);
+    void timerEvent(QTimerEvent *event);
+    void wheelEvent(QWheelEvent *event);
+    void drawBackground(QPainter *painter, const QRectF &rect);
 
-  void scaleView(qreal scaleFactor);
+    void scaleView(qreal scaleFactor);
 
  private:
-  int timerId;
-  Node *centerNode;
+    int timerId;
+    Node *centerNode;
 
-  QGraphicsScene *scene;
-  std::vector<std::vector<std::vector<Node*>>> kjiLeafNodes;
-  Node* root;
+    QGraphicsScene *scene;
+    std::vector<std::vector<std::vector<Node*>>> kjiLeafNodes;
+    Node* root;
 };
  
 #endif

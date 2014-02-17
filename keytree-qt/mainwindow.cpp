@@ -24,13 +24,11 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
 #include <iostream>
 #include <algorithm>
 #include <stdexcept>
 #include <sstream>
 #include "keynode/logger.h"
-#include <QToolTip>
 #include "keynode/CoinClasses/Base58Check.h"
 
 using namespace std;

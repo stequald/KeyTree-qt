@@ -1,8 +1,9 @@
 #include "mainwindow.h"
 #include <QApplication>
-#include "keynode/logger.h"
 #include <iostream>
+#include "keynode/logger.h"
 using namespace  std;
+
 int main(int argc, char *argv[])
 {
     try
@@ -12,7 +13,6 @@ int main(int argc, char *argv[])
         //Logger::setLogLevelDebug();
         Logger::setLogLevelInfo();
 
-
         QApplication a(argc, argv);
         MainWindow w;
         w.show();
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     }
     catch (int e)
     {
-      cout << "An exception occurred. Exception Nr. " << e << '\n';
+        cout << "An exception occurred. Exception Nr. " << e << '\n';
     }
 
     //return 0;

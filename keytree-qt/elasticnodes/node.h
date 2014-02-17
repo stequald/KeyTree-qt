@@ -50,34 +50,34 @@ class QGraphicsSceneMouseEvent;
  
 class Node : public QGraphicsItem
 {
- public:
-  Node(GraphWidget *graphWidget);
-  Node(GraphWidget *graphWidget, QString nodeDescription);
+public:
+    Node(GraphWidget *graphWidget);
+    Node(GraphWidget *graphWidget, QString nodeDescription);
 
-  void addEdge(Edge *edge);
-  QList<Edge *> edges() const;
- 
-  enum  { Type = UserType + 1 };
-  int type() const  { return Type; }
- 
-  void calculateForces();
-  bool advance();
- 
-  QRectF boundingRect() const;
-  QPainterPath shape() const;
-  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
- 
- protected:
-  QVariant itemChange(GraphicsItemChange change, const QVariant &value);
- 
-  void mousePressEvent(QGraphicsSceneMouseEvent *event);
-  void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-  void hoverEnterEvent (QGraphicsSceneHoverEvent * event);
-  void hoverLeaveEvent (QGraphicsSceneHoverEvent * event);
- private:
-  QList<Edge *> edgeList;
-  QPointF newPos;
-  GraphWidget *graph;
+    void addEdge(Edge *edge);
+    QList<Edge *> edges() const;
+
+    enum  { Type = UserType + 1 };
+    int type() const  { return Type; }
+
+    void calculateForces();
+    bool advance();
+
+    QRectF boundingRect() const;
+    QPainterPath shape() const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
+protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void hoverEnterEvent (QGraphicsSceneHoverEvent * event);
+    void hoverLeaveEvent (QGraphicsSceneHoverEvent * event);
+private:
+    QList<Edge *> edgeList;
+    QPointF newPos;
+    GraphWidget *graph;
 };
  
 #endif

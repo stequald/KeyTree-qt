@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QLineEdit>
 #include <iostream>
 #include <string>
 #include <stdlib.h>     /* srand, rand */
@@ -9,11 +10,10 @@
 #include <vector>
 #include <string>
 #include <stdint.h>
-#include "keynode/keynode.h"
 #include <map>
-#include <QLineEdit>
-#include "elasticnodes/graphwidget.h"
 #include <deque>
+#include "keynode/keynode.h"
+#include "elasticnodes/graphwidget.h"
 
 using namespace std;
 typedef std::pair<uint32_t,uint32_t> Range;
