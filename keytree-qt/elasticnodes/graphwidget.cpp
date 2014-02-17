@@ -143,7 +143,10 @@ Node* GraphWidget::addItem(QString nodeDescription, Node* currentLeaf) {
     //Logger::log("newedge_after_addItem");
     //Logger::log("newedge" + std::to_string(currentLeaf->pos().y()));
 
-    newLeaf->setPos(-50, currentLeaf->pos().y()+20);
+    //temp fix: randomize position of node so no node is on top of another
+    qreal newLeafX = currentLeaf->pos().x() + rand() % 20 + 1;
+    qreal newLeafY = currentLeaf->pos().y() + rand() % 20 + 1;
+    newLeaf->setPos(newLeafX, newLeafY);
     currentLeaf = newLeaf;
     return newLeaf;
 }
