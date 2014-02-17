@@ -77,7 +77,6 @@ public:
     inline bool isPrime(uint32_t i) { return 0x80000000 & i; }
     void outputString(const std::string& str);
 
-    void outputExamples();
     void testVector1();
     void testVector2();
 

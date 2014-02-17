@@ -418,39 +418,14 @@ void MainWindow::outputString(const std::string& str) {
     ui->resultsTextEdit->append(qtext);
 }
 
-void MainWindow::outputExamples() {
-    outputString("Input parameters can be in hex or base58.");
-    outputString("Here are some examples:");
-    outputString("");
-
-    outputString("Given Seed and Chain will output Child Extended Keys:");
-    outputString(cmdName+exampleArg1);
-    outputString(cmdName+exampleArg2);
-    outputString(cmdName+exampleArg3);
-    outputString(cmdName+exampleArg4);
-    outputString("");
-
-    outputString("Given Extended Key and Chain will output Child Extended Keys:");
-    outputString(cmdName+exampleArg5);
-    outputString(cmdName+exampleArg6);
-    outputString("");
-
-    outputString("Given Extended Key and range will output Private Keys and Addresses from child of Extended Key in given range:");
-    outputString(cmdName+exampleArg7);
-    outputString(cmdName+exampleArg8);
-    outputString("");
-
-    outputString("Given Extended Key will output Private Key and Address of Extended Key:");
-    outputString(cmdName+exampleArg9);
-    outputString(cmdName+exampleArg10);
-    outputString("");
+void MainWindow::testVector1() {
+    this->clearTree();
+    outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/1/2'/2/1000000000", StringUtils::StringFormat::hex);
 }
 
 void MainWindow::testVector1() {
     this->clearTree();
-    //outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/1/2'/2/1000000000", StringUtils::StringFormat::hex);
-    //outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/1/(2-3)'", StringUtils::StringFormat::hex);
-    outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/(3-4)'/6'", StringUtils::StringFormat::hex);
+    outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/1/2'/2/1000000000", StringUtils::StringFormat::hex);
 }
 
 void MainWindow::testVector2() {
@@ -473,21 +448,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->formLayout->addWidget(treeWidget);
 
     connect( ui->extKeyButton, SIGNAL( clicked() ), this, SLOT(goClicked()) );
-
     connect( ui->seedLineEdit, SIGNAL( editingFinished() ), this, SLOT( seedEditingFinished()) );
     connect( ui->seedHexLineEdit, SIGNAL( editingFinished() ), this, SLOT( seedHexEditingFinished()) );
     connect( ui->extKeyLineEdit, SIGNAL( editingFinished() ), this, SLOT( extkeyEditingFinished()) );
-
-
-
     connect( ui->extKeyRadioButton, SIGNAL( clicked() ), this, SLOT( extKeyRadioButtonClicked()) );
     connect( ui->seedRadioButton, SIGNAL( clicked() ), this, SLOT( seedRadioButtonClicked()) );
-
     connect( ui->extKeyRadioButton, SIGNAL( clicked() ), this, SLOT( extKeyRadioButtonClicked()) );
-
-
     connect( ui->defaultChainsComboBox, SIGNAL( currentIndexChanged(int) ), this, SLOT( defaultChainsComboBoxActivated(int)) );
-
 
     for(std::string chain : defaultChains) {
         ui->defaultChainsComboBox->addItem(qStringFromSTDString(chain));
@@ -495,12 +462,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->seedRadioButton->setChecked(true);
     seedRadioButtonClicked();
-
-    testVector1();
-
-
     fullTreeDescription = std::string("");
     ui->resultsTextEdit->setFont(QFont ("Helvetica", 8));
+
+    testVector1();
 }
 
 void MainWindow::defaultChainsComboBoxActivated(int idx)

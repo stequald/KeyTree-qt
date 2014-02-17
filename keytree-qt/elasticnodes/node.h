@@ -51,7 +51,6 @@ class QGraphicsSceneMouseEvent;
 class Node : public QGraphicsItem
 {
 public:
-    Node(GraphWidget *graphWidget);
     Node(GraphWidget *graphWidget, QString nodeDescription);
 
     void addEdge(Edge *edge);

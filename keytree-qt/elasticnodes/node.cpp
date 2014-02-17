@@ -48,19 +48,6 @@
 #include "node.h"
 #include "graphwidget.h"
 
-Node::Node(GraphWidget *graphWidget)
-  : graph(graphWidget)
-{
-    setFlag(ItemIsMovable);
-    setFlag(ItemSendsGeometryChanges);
-    setCacheMode(DeviceCoordinateCache);
-    setZValue(-1);
-
-    setAcceptHoverEvents(true);
-    setToolTip(QString("say whaddt"));
-    QToolTip::setFont(QFont ("Helvetica", 8));
-}
-
 Node::Node(GraphWidget *graphWidget, QString nodeDescription)
   : graph(graphWidget)
 {
@@ -71,6 +58,7 @@ Node::Node(GraphWidget *graphWidget, QString nodeDescription)
 
     setAcceptHoverEvents(true);
     setToolTip(nodeDescription);
+    QToolTip::setFont(QFont ("Helvetica", 8));
 }
 
 void Node::addEdge(Edge *edge)
