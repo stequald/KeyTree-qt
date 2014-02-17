@@ -29,8 +29,6 @@ namespace TreeTraversal {
 }
 
 static const TreeTraversal::Type defaultTreeTraversalType = TreeTraversal::preorder;
-//static const TreeTraversal::Type defaultTreeTraversalType = TreeTraversal::levelorder;
-//static const TreeTraversal::Type defaultTreeTraversalType = TreeTraversal::postorder;
 static const uint32_t NODE_IDX_M = -1;
 
 namespace Ui {
@@ -49,6 +47,7 @@ public:
 
     void outputExamples();
     void outputString(const std::string& str);
+    std::string getNodeDataString(const KeyNode& keyNode, const std::string& chainName, bool isVerbose);
 
     void traverseLevelorder(const KeyNode& keyNode, const TreeChains& treeChains, const std::string& chainName,
                             uint64_t level, std::deque<KeyNode>& keyNodeDeq,

@@ -127,7 +127,6 @@ void MainWindow::outputExtKeysFromSeed(const std::string& seed, const std::strin
         std::deque<KeyNode> KeyNodeDeq;
         std::deque<std::pair<uint64_t,std::string>> levelNChainDeq;
         std::deque<Node*> graphNodeDeq;
-        //graphNodeDeq.push_back(leaf);
         traverseLevelorder(prv, treeChains, "m", 0, KeyNodeDeq, levelNChainDeq, graphNodeDeq, NULL, isVerbose);
     }
     else
@@ -179,7 +178,6 @@ void MainWindow::traversePreorder(const KeyNode& keyNode, TreeChains treeChains,
                 if (isPrivate) k = toPrime(k);
                 std::string childChainName = chainName + "/" + iToString(k);
                 KeyNode childNode = keyNode.getChild(k);
-                Logger::debug("traversePreorder");
                 Node* leaf = visit(childNode, childChainName, isVerbose, currentLeft);
                 traversePreorder(childNode, treeChains, childChainName, isVerbose, leaf);
             }
@@ -197,17 +195,23 @@ void MainWindow::traversePostorder(const KeyNode& keyNode, TreeChains treeChains
         uint32_t max = range.second;
 
         if (min == NODE_IDX_M && max == NODE_IDX_M) {
-            traversePostorder(keyNode, treeChains, chainName, isVerbose);
-            visit(keyNode, "m", isVerbose);
+            std::string nodeData(this->getNodeDataString(keyNode, "m", isVerbose));
+            QString nodeDescription =  this->qStringFromSTDString(nodeData);
+            Node* leaf = this->treeWidget->addItem(nodeDescription, currentLeft);
+            traversePostorder(keyNode, treeChains, chainName, isVerbose, leaf);
+            outputString(nodeData);
         } else {
             for (uint32_t i = min; i <= max; ++i) {
                 uint32_t k = i;
                 if (isPrivate) k = toPrime(k);
                 std::string childChainName = chainName + "/" + iToString(k);
                 KeyNode childNode = keyNode.getChild(k);
-                //traversePreorder(childNode, treeChains, childChainName, isVerbose, leaf);
-                traversePreorder(childNode, treeChains, childChainName, isVerbose, currentLeft);
-                Node* leaf = visit(childNode, childChainName, isVerbose, currentLeft);
+
+                std::string nodeData(this->getNodeDataString(childNode, childChainName, isVerbose));
+                QString nodeDescription =  this->qStringFromSTDString(nodeData);
+                Node* leaf = this->treeWidget->addItem(nodeDescription, currentLeft);
+                traversePostorder(childNode, treeChains, childChainName, isVerbose, leaf);
+                outputString(nodeData);
             }
         }
     }
@@ -241,7 +245,6 @@ void MainWindow::traverseLevelorder(const KeyNode& keyNode, const TreeChains& tr
         }
     }
 
-    Logger::debug("traverseLevelorder");
     Node* newLeaf = visit(keyNode, chainName, isVerbose, leaf);
     for (uint32_t i = 0; i < childCount; ++i) {
         graphNodeDeq.push_back(newLeaf);
@@ -263,6 +266,14 @@ void MainWindow::traverseLevelorder(const KeyNode& keyNode, const TreeChains& tr
 }
 
 Node* MainWindow::visit(const KeyNode& keyNode, const std::string& chainName, bool isVerbose, Node* currentLeft) {
+    std::string nodeData(this->getNodeDataString(keyNode, chainName, isVerbose));
+    outputString(nodeData);
+    QString nodeDescription =  this->qStringFromSTDString(nodeData);
+    Node* leaf = this->treeWidget->addItem(nodeDescription, currentLeft);
+    return leaf;
+}
+
+std::string MainWindow::getNodeDataString(const KeyNode& keyNode, const std::string& chainName, bool isVerbose) {
     std::string nodeData("");
     nodeData += "* [Chain " + chainName + "]\n";
     if (keyNode.isPrivate()) {
@@ -281,11 +292,7 @@ Node* MainWindow::visit(const KeyNode& keyNode, const std::string& chainName, bo
             nodeData += "\n  * pub key:  " + toBase58Check(keyNode.pubkey()) + "\n";
         } else nodeData += "\n";
     }
-
-    outputString(nodeData);
-    QString nodeDescription =  this->qStringFromSTDString(nodeData);
-    Node* leaf = this->treeWidget->addItem(nodeDescription, currentLeft);
-    return leaf;
+    return nodeData;
 }
 
 void MainWindow::outputExtraKeyNodeData(const KeyNode& keyNode) {
