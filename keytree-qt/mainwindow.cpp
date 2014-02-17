@@ -418,9 +418,11 @@ void MainWindow::outputString(const std::string& str) {
     ui->resultsTextEdit->append(qtext);
 }
 
-void MainWindow::testVector1() {
+void MainWindow::displayStartUpKeyTree() {
     this->clearTree();
-    outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/1/2'/2/1000000000", StringUtils::StringFormat::hex);
+    outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/(3-4)'/6'", StringUtils::StringFormat::hex);
+    //testVector1();
+    //testVector2();
 }
 
 void MainWindow::testVector1() {
@@ -465,7 +467,7 @@ MainWindow::MainWindow(QWidget *parent) :
     fullTreeDescription = std::string("");
     ui->resultsTextEdit->setFont(QFont ("Helvetica", 8));
 
-    testVector1();
+    displayStartUpKeyTree();
 }
 
 void MainWindow::defaultChainsComboBoxActivated(int idx)
