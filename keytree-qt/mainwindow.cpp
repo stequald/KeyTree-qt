@@ -127,7 +127,8 @@ void MainWindow::outputExtKeysFromSeed(const std::string& seed, const std::strin
         std::deque<KeyNode> KeyNodeDeq;
         std::deque<std::pair<uint64_t,std::string>> levelNChainDeq;
         std::deque<Node*> graphNodeDeq;
-        traverseLevelorder(prv, treeChains, "m", 0, KeyNodeDeq, levelNChainDeq, graphNodeDeq, NULL, isVerbose);
+        traverseLevelorder(prv, treeChains, "m", 0, KeyNodeDeq, levelNChainDeq,
+                           graphNodeDeq, NULL, isVerbose);
     }
     else
         traversePreorder(prv, treeChains, "m", isVerbose, NULL);
@@ -147,7 +148,8 @@ void MainWindow::outputExtKeysFromExtKey(const std::string& extKey, const std::s
         std::deque<KeyNode> KeyNodeDeq;
         std::deque<std::pair<uint64_t,std::string>> levelNChainDeq;
         std::deque<Node*> graphNodeDeq;
-        traverseLevelorder(keyNode, treeChains, "___", 0, KeyNodeDeq, levelNChainDeq, graphNodeDeq, NULL, isVerbose);
+        traverseLevelorder(keyNode, treeChains, "___", 0, KeyNodeDeq, levelNChainDeq,
+                           graphNodeDeq, NULL, isVerbose);
     } else
         traversePreorder(keyNode, treeChains, "___", isVerbose);
 }
@@ -160,7 +162,8 @@ void MainWindow::outputKeyAddressofExtKey(const std::string& extKey, bool isVerb
     outputString("");
 }
 
-void MainWindow::traversePreorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose, Node* currentLeft) {
+void MainWindow::traversePreorder(const KeyNode& keyNode, TreeChains treeChains,
+                                  const std::string& chainName, bool isVerbose, Node* currentLeft) {
     if (! treeChains.empty()) {
         IsPrivateNPathRange isPrivateNPathRange = treeChains.front();
         treeChains.pop_front();
@@ -185,7 +188,8 @@ void MainWindow::traversePreorder(const KeyNode& keyNode, TreeChains treeChains,
     }
 }
 
-void MainWindow::traversePostorder(const KeyNode& keyNode, TreeChains treeChains, const std::string& chainName, bool isVerbose, Node* currentLeft) {
+void MainWindow::traversePostorder(const KeyNode& keyNode, TreeChains treeChains,
+                                   const std::string& chainName, bool isVerbose, Node* currentLeft) {
     if (! treeChains.empty()) {
         IsPrivateNPathRange isPrivateNPathRange = treeChains.front();
         treeChains.pop_front();
@@ -217,8 +221,9 @@ void MainWindow::traversePostorder(const KeyNode& keyNode, TreeChains treeChains
     }
 }
 
-void MainWindow::traverseLevelorder(const KeyNode& keyNode, const TreeChains& treeChains, const std::string& chainName,
-                                    uint64_t level, std::deque<KeyNode>& keyNodeDeq,
+void MainWindow::traverseLevelorder(const KeyNode& keyNode, const TreeChains& treeChains,
+                                    const std::string& chainName, uint64_t level,
+                                    std::deque<KeyNode>& keyNodeDeq,
                                     std::deque<std::pair<uint64_t,std::string>>& levelNChainDeq,
                                     std::deque<Node*>& graphNodeDeq, Node* leaf,
                                     bool isVerbose) {
@@ -261,11 +266,13 @@ void MainWindow::traverseLevelorder(const KeyNode& keyNode, const TreeChains& tr
         Node*leaf = graphNodeDeq.front();
         graphNodeDeq.pop_front();
 
-        traverseLevelorder(node, treeChains, cc, lev, keyNodeDeq, levelNChainDeq, graphNodeDeq, leaf, isVerbose);
+        traverseLevelorder(node, treeChains, cc, lev, keyNodeDeq, levelNChainDeq,
+                           graphNodeDeq, leaf, isVerbose);
     }
 }
 
-Node* MainWindow::visit(const KeyNode& keyNode, const std::string& chainName, bool isVerbose, Node* currentLeft) {
+Node* MainWindow::visit(const KeyNode& keyNode, const std::string& chainName,
+                        bool isVerbose, Node* currentLeft) {
     std::string nodeData(this->getNodeDataString(keyNode, chainName, isVerbose));
     outputString(nodeData);
     QString nodeDescription =  this->qStringFromSTDString(nodeData);
@@ -273,7 +280,8 @@ Node* MainWindow::visit(const KeyNode& keyNode, const std::string& chainName, bo
     return leaf;
 }
 
-std::string MainWindow::getNodeDataString(const KeyNode& keyNode, const std::string& chainName, bool isVerbose) {
+std::string MainWindow::getNodeDataString(const KeyNode& keyNode, const std::string& chainName,
+                                          bool isVerbose) {
     std::string nodeData("");
     nodeData += "* [Chain " + chainName + "]\n";
     if (keyNode.isPrivate()) {
@@ -358,6 +366,27 @@ TreeChains MainWindow::parseChainString(const std::string& chainStr, bool isPriv
     return treeChains;
 }
 
+IsPrivateNPathRange MainWindow::parseRange(const std::string node, bool isPrivate) {
+    //node must be like (123-9345)
+    const std::string minMaxString =  node.substr(1,node.length()-2);
+    const std::deque<std::string> minMaxPair = StringUtils::split(minMaxString, '-');
+
+    if (minMaxPair.size() != 2)
+        throw std::invalid_argument("Invalid arguments.");
+
+    uint32_t min = std::stoi(minMaxPair[0]);
+    uint32_t max = std::stoi(minMaxPair[1]);
+    if (min == NODE_IDX_M)
+        throw std::invalid_argument("Invalid arguments. Invalid Range: " + std::to_string(min));
+    if (max == NODE_IDX_M)
+        throw std::invalid_argument("Invalid arguments. Invalid Range: " + std::to_string(max));
+
+    if (isPrivate) {
+        return IsPrivateNPathRange(true, Range(min, max));
+    } else {
+        return IsPrivateNPathRange(false, Range(min, max));
+    }
+}
 
 std::string MainWindow::iToString(uint32_t i) {
     std::stringstream ss;
@@ -386,39 +415,9 @@ uchar_vector MainWindow::fromBase58ExtKey(const std::string& extKey) {
     return uchar_vector(VERSION_BYTE+fillKey.getHex()); //append VERSION_BYTE to begining
 }
 
-IsPrivateNPathRange MainWindow::parseRange(const std::string node, bool isPrivate) {
-    //node must be like (123-9345)
-    const std::string minMaxString =  node.substr(1,node.length()-2);
-    const std::deque<std::string> minMaxPair = StringUtils::split(minMaxString, '-');
-
-    if (minMaxPair.size() != 2)
-        throw std::invalid_argument("Invalid arguments.");
-
-    uint32_t min = std::stoi(minMaxPair[0]);
-    uint32_t max = std::stoi(minMaxPair[1]);
-    if (min == NODE_IDX_M)
-        throw std::invalid_argument("Invalid arguments. Invalid Range: " + std::to_string(min));
-    if (max == NODE_IDX_M)
-        throw std::invalid_argument("Invalid arguments. Invalid Range: " + std::to_string(max));
-
-    if (isPrivate) {
-        return IsPrivateNPathRange(true, Range(min, max));
-    } else {
-        return IsPrivateNPathRange(false, Range(min, max));
-    }
-}
-
-void MainWindow::testVector1() {
-    this->clearTree();
-    //outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/1/2'/2/1000000000", StringUtils::StringFormat::hex);
-    //outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/1/(2-3)'", StringUtils::StringFormat::hex);
-    outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/(3-4)'/6'", StringUtils::StringFormat::hex);
-}
-
-void MainWindow::testVector2() {
-    this->clearTree();
-    std::string seed = "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542";
-    outputExtKeysFromSeed(seed, "m/0/2147483647'/1/2147483646'/2", StringUtils::StringFormat::hex);
+void MainWindow::outputString(const std::string& str) {
+    QString qtext = qStringFromSTDString(str+"");
+    ui->resultsTextEdit->append(qtext);
 }
 
 void MainWindow::outputExamples() {
@@ -449,10 +448,17 @@ void MainWindow::outputExamples() {
     outputString("");
 }
 
+void MainWindow::testVector1() {
+    this->clearTree();
+    //outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/1/2'/2/1000000000", StringUtils::StringFormat::hex);
+    //outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/1/(2-3)'", StringUtils::StringFormat::hex);
+    outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/(3-4)'/6'", StringUtils::StringFormat::hex);
+}
 
-void MainWindow::outputString(const std::string& str) {
-    QString qtext = qStringFromSTDString(str+"");
-    ui->resultsTextEdit->append(qtext);
+void MainWindow::testVector2() {
+    this->clearTree();
+    std::string seed = "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542";
+    outputExtKeysFromSeed(seed, "m/0/2147483647'/1/2147483646'/2", StringUtils::StringFormat::hex);
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -644,11 +650,3 @@ QString MainWindow::qStringFromSTDString(std::string str) {
     QString qstr = QString::fromStdString(str);
     return qstr;
 }
-
-
-
-
-
-
-
-
