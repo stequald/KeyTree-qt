@@ -370,20 +370,26 @@ void MainWindow::outputString(const std::string& str) {
 
 void MainWindow::displayStartUpKeyTree() {
     this->clearTree();
-    outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/(3-4)'/6'", StringUtils::StringFormat::hex);
+    ui->chainLineEdit->setText("m/0'/(3-4)'/6'");
+    ui->seedHexLineEdit->setText("000102030405060708090a0b0c0d0e0f");
+    goClicked();
     //testVector1();
     //testVector2();
 }
 
 void MainWindow::testVector1() {
     this->clearTree();
-    outputExtKeysFromSeed("000102030405060708090a0b0c0d0e0f", "m/0'/1/2'/2/1000000000", StringUtils::StringFormat::hex);
+    ui->chainLineEdit->setText("m/0'/1/2'/2/1000000000");
+    ui->seedHexLineEdit->setText("000102030405060708090a0b0c0d0e0f");
+    goClicked();
 }
 
 void MainWindow::testVector2() {
     this->clearTree();
     std::string seed = "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542";
-    outputExtKeysFromSeed(seed, "m/0/2147483647'/1/2147483646'/2", StringUtils::StringFormat::hex);
+    ui->chainLineEdit->setText("m/0/2147483647'/1/2147483646'/2");
+    ui->seedHexLineEdit->setText(qStringFromSTDString(seed));
+    goClicked();
 }
 
 MainWindow::MainWindow(QWidget *parent) :
