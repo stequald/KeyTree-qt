@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     elasticnodes/edge.cpp \
     keynode/keynode.cpp \
     keynode/logger.cpp \
-    keynode/CoinClasses/hdkeys.cpp
+    keynode/CoinClasses/hdkeys.cpp \
+    keytreeutil.cpp
 
 HEADERS  += mainwindow.h \
     elasticnodes/node.h \
@@ -38,6 +39,7 @@ HEADERS  += mainwindow.h \
     keynode/CoinClasses/hdkeys.h \
     keynode/CoinClasses/secp256k1.h \
     keynode/CoinClasses/typedefs.h \
-    keynode/CoinClasses/uchar_vector.h
+    keynode/CoinClasses/uchar_vector.h \
+    keytreeutil.h
 
 FORMS    += mainwindow.ui

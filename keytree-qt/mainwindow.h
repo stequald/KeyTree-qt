@@ -14,22 +14,14 @@
 #include <deque>
 #include "keynode/keynode.h"
 #include "elasticnodes/graphwidget.h"
+#include "keytreeutil.h"
 
 using namespace std;
 typedef std::pair<uint32_t,uint32_t> Range;
 typedef std::pair<bool,Range> IsPrivateNPathRange; // < isPrivate, <min,max> >
 typedef std::deque<IsPrivateNPathRange> TreeChains;
 
-namespace TreeTraversal {
-    enum Type {
-        preorder,
-        postorder,
-        levelorder
-    };
-}
-
 static const TreeTraversal::Type defaultTreeTraversalType = TreeTraversal::preorder;
-static const uint32_t NODE_IDX_M = -1;
 
 namespace Ui {
 class MainWindow;
@@ -69,13 +61,6 @@ public:
     void outputExtraKeyNodeData(const KeyNode& keyNode);
     TreeChains parseChainString(const std::string& chainStr, bool isPrivate);
     IsPrivateNPathRange parseRange(const std::string node, bool isPrivate);
-
-    std::string iToString(uint32_t i);
-    uchar_vector extKeyBase58OrHexToBytes(const std::string& extKey);
-    uchar_vector fromBase58ExtKey(const std::string& extKey);
-    inline uint32_t toPrime(uint32_t i) { return 0x80000000 | i; }
-    inline uint32_t removePrime(uint32_t i) { return 0x7fffffff & i; }
-    inline bool isPrime(uint32_t i) { return 0x80000000 & i; }
     void outputString(const std::string& str);
 
     void displayStartUpKeyTree();
