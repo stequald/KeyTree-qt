@@ -28,8 +28,11 @@
 #include <algorithm>
 #include <stdexcept>
 #include <sstream>
+#include <deque>
 #include "keynode/logger.h"
 #include "keynode/CoinClasses/Base58Check.h"
+#include "guiutil.h"
+#include "keytreeeditdialog.h"
 
 using namespace std;
 
@@ -89,12 +92,7 @@ static const std::string NO_CHAIN = "None";
 static const std::string DEFAULT_I_MIN = "0";
 static const std::string DEFAULT_I_MAX = "4";
 
-static const QColor ROOT_NODE_PRIMARY_COLOR = Qt::blue;
-static const QColor ROOT_NODE_SECONDARY_COLOR = Qt::darkBlue;
-static const QColor NODE_PRIMARY_COLOR = Qt::yellow;
-static const QColor NODE_SECONDARY_COLOR = Qt::darkYellow;
-static const QColor LEAF_NODE_PRIMARY_COLOR = Qt::green;
-static const QColor LEAF_NODE_SECONDARY_COLOR = Qt::darkGreen;
+
 
 static const std::vector<std::string> defaultChains({NO_CHAIN,
                                                      CUSTOM_CHAIN,
@@ -102,6 +100,7 @@ static const std::vector<std::string> defaultChains({NO_CHAIN,
                                                      "m/0'/0",
                                                      "m/1'/1",
                                                      "m/0/2"});
+
 
 void MainWindow::outputExtKeysFromSeed(const std::string& seed, const std::string& chainStr,
                            StringUtils::StringFormat seedStringFormat, TreeTraversal::Type traversalType,
@@ -123,6 +122,8 @@ void MainWindow::outputExtKeysFromSeed(const std::string& seed, const std::strin
 
     KeyNode prv(k, c);
     TreeChains treeChains = KeyTreeUtil::parseChainString(chainStr, prv.isPrivate());
+
+    /*
     outputString("Master (hex): " + seedHex);
 
     if (traversalType == TreeTraversal::postorder)
@@ -137,6 +138,9 @@ void MainWindow::outputExtKeysFromSeed(const std::string& seed, const std::strin
     }
     else
         traversePreorder(prv, treeChains, "m", isVerbose, NULL);
+    //*/
+    KeyTreeEditDialog* keyTreeEditDialog = new KeyTreeEditDialog(prv, treeChains, this);
+    keyTreeEditDialog->show();
 }
 
 void MainWindow::outputExtKeysFromExtKey(const std::string& extKey, const std::string& chainStr,
@@ -144,6 +148,7 @@ void MainWindow::outputExtKeysFromExtKey(const std::string& extKey, const std::s
     uchar_vector extendedKey(KeyTreeUtil::extKeyBase58OrHexToBytes(extKey));
     KeyNode keyNode(extendedKey);
     TreeChains treeChains = KeyTreeUtil::parseChainString(chainStr, keyNode.isPrivate());
+    /*
     if (isVerbose) outputExtraKeyNodeData(keyNode);
 
     if (traversalType == TreeTraversal::postorder)
@@ -157,219 +162,27 @@ void MainWindow::outputExtKeysFromExtKey(const std::string& extKey, const std::s
                            graphNodeDeq, NULL, isVerbose);
     } else
         traversePreorder(keyNode, treeChains, "___", isVerbose);
+    //*/
+
+    KeyTreeEditDialog* keyTreeEditDialog = new KeyTreeEditDialog(keyNode, treeChains, this);
+    keyTreeEditDialog->show();
 }
 
 void MainWindow::outputKeyAddressofExtKey(const std::string& extKey, bool isVerbose) {
     uchar_vector extendedKey(KeyTreeUtil::extKeyBase58OrHexToBytes(extKey));
     KeyNode keyNode(extendedKey);
+    /*
     visit(keyNode, "___", true, ROOT_NODE_PRIMARY_COLOR, ROOT_NODE_SECONDARY_COLOR);
     if (isVerbose) outputExtraKeyNodeData(keyNode);
     outputString("");
-}
+    //*/
 
-void MainWindow::traversePreorder(const KeyNode& keyNode, TreeChains treeChains,
-                                  const std::string& chainName, bool isVerbose, Node* currentLeft) {
-    if (! treeChains.empty()) {
-        IsPrivateNPathRange isPrivateNPathRange = treeChains.front();
-        treeChains.pop_front();
-        bool isPrivate = isPrivateNPathRange.first;
-        Range range = isPrivateNPathRange.second;
-        uint32_t min = range.first;
-        uint32_t max = range.second;
-
-        if (min == KeyTreeUtil::NODE_IDX_M && max == KeyTreeUtil::NODE_IDX_M) {
-            visit(keyNode, "m", isVerbose, ROOT_NODE_PRIMARY_COLOR, ROOT_NODE_SECONDARY_COLOR);
-           traversePreorder(keyNode, treeChains, chainName, isVerbose);
-        } else {
-            for (uint32_t i = min; i <= max; ++i) {
-                uint32_t k = i;
-                if (isPrivate) k = KeyTreeUtil::toPrime(k);
-                std::string childChainName = chainName + "/" + KeyTreeUtil::iToString(k);
-                KeyNode childNode = keyNode.getChild(k);
-                QColor nodePrimaryColor;
-                QColor nodeSecondaryColor;
-                 if (! treeChains.empty()) {
-                     nodePrimaryColor = NODE_PRIMARY_COLOR;
-                     nodeSecondaryColor = NODE_SECONDARY_COLOR;
-                 }
-                 else {
-                     nodePrimaryColor = LEAF_NODE_PRIMARY_COLOR;
-                     nodeSecondaryColor = LEAF_NODE_SECONDARY_COLOR;
-                 }
-                Node* leaf = visit(childNode, childChainName, isVerbose,
-                                   nodePrimaryColor, nodeSecondaryColor, currentLeft);
-                traversePreorder(childNode, treeChains, childChainName, isVerbose, leaf);
-            }
-        }
-    }
-}
-
-void MainWindow::traversePostorder(const KeyNode& keyNode, TreeChains treeChains,
-                                   const std::string& chainName, bool isVerbose, Node* currentLeft) {
-    if (! treeChains.empty()) {
-        IsPrivateNPathRange isPrivateNPathRange = treeChains.front();
-        treeChains.pop_front();
-        bool isPrivate = isPrivateNPathRange.first;
-        Range range = isPrivateNPathRange.second;
-        uint32_t min = range.first;
-        uint32_t max = range.second;
-
-        if (min == KeyTreeUtil::NODE_IDX_M && max == KeyTreeUtil::NODE_IDX_M) {
-            std::string nodeData(this->getNodeDataString(keyNode, "m", isVerbose));
-            QString nodeDescription =  this->qStringFromSTDString(nodeData);
-            Node* leaf = this->treeWidget->addItem(nodeDescription, ROOT_NODE_PRIMARY_COLOR,
-                                                   ROOT_NODE_SECONDARY_COLOR, currentLeft);
-            traversePostorder(keyNode, treeChains, chainName, isVerbose, leaf);
-            outputString(nodeData);
-        } else {
-            for (uint32_t i = min; i <= max; ++i) {
-                uint32_t k = i;
-                if (isPrivate) k = KeyTreeUtil::toPrime(k);
-                std::string childChainName = chainName + "/" + KeyTreeUtil::iToString(k);
-                KeyNode childNode = keyNode.getChild(k);
-
-                QColor nodePrimaryColor;
-                QColor nodeSecondaryColor;
-                 if (! treeChains.empty()) {
-                     nodePrimaryColor = NODE_PRIMARY_COLOR;
-                     nodeSecondaryColor = NODE_SECONDARY_COLOR;
-                 }
-                 else {
-                     nodePrimaryColor = LEAF_NODE_PRIMARY_COLOR;
-                     nodeSecondaryColor = LEAF_NODE_SECONDARY_COLOR;
-                 }
-                std::string nodeData(this->getNodeDataString(childNode, childChainName, isVerbose));
-                QString nodeDescription =  this->qStringFromSTDString(nodeData);
-                Node* leaf = this->treeWidget->addItem(nodeDescription, nodePrimaryColor,
-                                                       nodeSecondaryColor, currentLeft);
-                traversePostorder(childNode, treeChains, childChainName, isVerbose, leaf);
-                outputString(nodeData);
-            }
-        }
-    }
-}
-
-void MainWindow::traverseLevelorder(const KeyNode& keyNode, const TreeChains& treeChains,
-                                    const std::string& chainName, uint64_t level,
-                                    std::deque<KeyNode>& keyNodeDeq,
-                                    std::deque<std::pair<uint64_t,std::string>>& levelNChainDeq,
-                                    std::deque<Node*>& graphNodeDeq, Node* leaf,
-                                    bool isVerbose) {
-
-    uint32_t childCount = 0;
-    QColor nodePrimaryColor;
-    QColor nodeSecondaryColor;
-    if (level < treeChains.size()) {
-        IsPrivateNPathRange isPrivateNPathRange = treeChains.at(level);
-        bool isPrivate = isPrivateNPathRange.first;
-        Range range = isPrivateNPathRange.second;
-        uint32_t min = range.first;
-        uint32_t max = range.second;
-
-        level++;
-        for (uint32_t i = min; i <= max; ++i) {
-            uint32_t k = i;
-            if (isPrivate) k = KeyTreeUtil::toPrime(k);
-            std::string childChainName = chainName + "/" + KeyTreeUtil::iToString(k);
-            KeyNode childNode = keyNode.getChild(k);
-
-            keyNodeDeq.push_back(childNode);
-            levelNChainDeq.push_back(std::pair<uint64_t,std::string>(level,childChainName));
-
-            childCount++;
-        }
-
-        if (level != 1) {
-            nodePrimaryColor = NODE_PRIMARY_COLOR;
-            nodeSecondaryColor = NODE_SECONDARY_COLOR;
-        } else {
-            nodePrimaryColor = ROOT_NODE_PRIMARY_COLOR;
-            nodeSecondaryColor = ROOT_NODE_SECONDARY_COLOR;
-        }
-    } else {
-        nodePrimaryColor = LEAF_NODE_PRIMARY_COLOR;
-        nodeSecondaryColor = LEAF_NODE_SECONDARY_COLOR;
-    }
-
-    Node* newLeaf = visit(keyNode, chainName, isVerbose, nodePrimaryColor, nodeSecondaryColor, leaf);
-
-    for (uint32_t i = 0; i < childCount; ++i) {
-        graphNodeDeq.push_back(newLeaf);
-    }
-
-    if (! keyNodeDeq.empty()) {
-        std::pair<uint64_t,std::string> pair = levelNChainDeq.front();
-        uint64_t lev = pair.first++;
-        std::string cc = pair.second;
-        KeyNode node = keyNodeDeq.front();
-        keyNodeDeq.pop_front();
-        levelNChainDeq.pop_front();
-
-        Node*leaf = graphNodeDeq.front();
-        graphNodeDeq.pop_front();
-
-        traverseLevelorder(node, treeChains, cc, lev, keyNodeDeq, levelNChainDeq,
-                           graphNodeDeq, leaf, isVerbose);
-    }
-}
-
-Node* MainWindow::visit(const KeyNode& keyNode, const std::string& chainName,
-                        bool isVerbose, QColor nodePrimaryColor, QColor nodeSecondaryColor, Node* currentLeft) {
-    std::string nodeData(this->getNodeDataString(keyNode, chainName, isVerbose));
-    outputString(nodeData);
-    QString nodeDescription =  this->qStringFromSTDString(nodeData);
-    Node* leaf = this->treeWidget->addItem(nodeDescription,
-                                           nodePrimaryColor, nodeSecondaryColor, currentLeft);
-    return leaf;
-}
-
-std::string MainWindow::getNodeDataString(const KeyNode& keyNode, const std::string& chainName,
-                                          bool isVerbose) {
-    std::string nodeData("");
-    nodeData += "* [Chain " + chainName + "]\n";
-    if (keyNode.isPrivate()) {
-        KeyNode keyNodePub= keyNode.getPublic();
-        nodeData += "  * ext pub:  " + toBase58Check(keyNodePub.extkey()) + "\n";
-        nodeData += "  * ext prv:  " + toBase58Check(keyNode.extkey())+ "\n";
-        nodeData += "  * priv key: " + keyNode.privkey() + "\n";
-        nodeData += "  * address:  " + keyNode.address();
-        if (isVerbose) {
-            nodeData += "\n  * pub key:  " + toBase58Check(keyNode.pubkey()) + "\n";
-        } else nodeData += "\n";
-    } else {
-        nodeData += "  * ext pub:  " + toBase58Check(keyNode.extkey()) + "\n";
-        nodeData += "  * address:  " + keyNode.address();
-        if (isVerbose) {
-            nodeData += "\n  * pub key:  " + toBase58Check(keyNode.pubkey()) + "\n";
-        } else nodeData += "\n";
-    }
-    return nodeData;
-}
-
-void MainWindow::outputExtraKeyNodeData(const KeyNode& keyNode) {
-    outputString("  * depth:              " + std::to_string(keyNode.depth()));
-    uint32_t childNum = keyNode.child_num();
-    if (KeyTreeUtil::isPrime(childNum))
-        outputString("  * child number:       " + std::to_string(KeyTreeUtil::removePrime(childNum))+"'");
-    else
-        outputString("  * child number:       " + std::to_string(childNum));
-    std::stringstream stream;
-    stream << std::hex << keyNode.parent_fp();
-    std::string parent_fp(stream.str());
-    outputString("  * parent fingerprint: " + parent_fp);
-    std::stringstream stream2;
-    stream2 << std::hex << keyNode.fp();
-    std::string fp(stream2.str());
-    outputString("  * fingerprint:        " + fp);
-}
-
-void MainWindow::outputString(const std::string& str) {
-    QString qtext = qStringFromSTDString(str+"");
-    ui->resultsTextEdit->append(qtext);
+    TreeChains treeChains = KeyTreeUtil::parseChainString("m", keyNode.isPrivate());
+    KeyTreeEditDialog* keyTreeEditDialog = new KeyTreeEditDialog(keyNode, treeChains, this);
+    keyTreeEditDialog->show();
 }
 
 void MainWindow::displayStartUpKeyTree() {
-    this->clearTree();
     ui->chainLineEdit->setText("m/0'/(3-4)'/6'");
     ui->seedHexLineEdit->setText("000102030405060708090a0b0c0d0e0f");
     goClicked();
@@ -378,17 +191,15 @@ void MainWindow::displayStartUpKeyTree() {
 }
 
 void MainWindow::testVector1() {
-    this->clearTree();
     ui->chainLineEdit->setText("m/0'/1/2'/2/1000000000");
     ui->seedHexLineEdit->setText("000102030405060708090a0b0c0d0e0f");
     goClicked();
 }
 
 void MainWindow::testVector2() {
-    this->clearTree();
     std::string seed = "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542";
     ui->chainLineEdit->setText("m/0/2147483647'/1/2147483646'/2");
-    ui->seedHexLineEdit->setText(qStringFromSTDString(seed));
+    ui->seedHexLineEdit->setText(GUIUtil::qStringFromSTDString(seed));
     goClicked();
 }
 
@@ -402,9 +213,6 @@ MainWindow::MainWindow(QWidget *parent) :
     //setFixedSize(windowFixedSize);
     this->setMinimumSize(100, 100);
 
-    treeWidget = new GraphWidget;
-    ui->formLayout->addWidget(treeWidget);
-
     connect( ui->extKeyButton, SIGNAL( clicked() ), this, SLOT(goClicked()) );
     connect( ui->seedLineEdit, SIGNAL( editingFinished() ), this, SLOT( seedEditingFinished()) );
     connect( ui->seedHexLineEdit, SIGNAL( editingFinished() ), this, SLOT( seedHexEditingFinished()) );
@@ -415,13 +223,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect( ui->defaultChainsComboBox, SIGNAL( currentIndexChanged(int) ), this, SLOT( defaultChainsComboBoxActivated(int)) );
 
     for(std::string chain : defaultChains) {
-        ui->defaultChainsComboBox->addItem(qStringFromSTDString(chain));
+        ui->defaultChainsComboBox->addItem(GUIUtil::qStringFromSTDString(chain));
     }
 
     ui->seedRadioButton->setChecked(true);
     seedRadioButtonClicked();
-    fullTreeDescription = std::string("");
-    ui->resultsTextEdit->setFont(QFont ("Helvetica", 8));
 
     displayStartUpKeyTree();
 }
@@ -429,7 +235,7 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::defaultChainsComboBoxActivated(int idx)
 {
     QString chain(ui->defaultChainsComboBox->itemText(idx));
-    std::string chainStr = stdStringFromQString(chain);
+    std::string chainStr = GUIUtil::stdStringFromQString(chain);
     if (chainStr == CUSTOM_CHAIN || chainStr == NO_CHAIN)
         ui->chainLineEdit->setText("");
     else
@@ -481,11 +287,9 @@ void MainWindow::seedHexEditingFinished()
 
 void MainWindow::seedEditingFinished()
 {
-    std::string seed =  stdStringFromQString(ui->seedLineEdit->text());
-    Logger::debug("*seed: " + seed);
+    std::string seed =  GUIUtil::stdStringFromQString(ui->seedLineEdit->text());
     std::string seedHex = StringUtils::string_to_hex(seed);
-
-    ui->seedHexLineEdit->setText(qStringFromSTDString(seedHex));
+    ui->seedHexLineEdit->setText(GUIUtil::qStringFromSTDString(seedHex));
 }
 
 void MainWindow::extkeyEditingFinished()
@@ -496,31 +300,19 @@ void MainWindow::extkeyEditingFinished()
     }
 }
 
-
-void MainWindow::clearTree()
-{
-    ui->resultsTextEdit->clear();
-    treeWidget->removeAllItem();
-    delete treeWidget;
-    treeWidget = new GraphWidget;
-    ui->formLayout->addWidget(treeWidget);
-}
-
 void MainWindow::goClicked()
 {
-    std::string chain =  stdStringFromQString(ui->chainLineEdit->text());
+    std::string chain =  GUIUtil::stdStringFromQString(ui->chainLineEdit->text());
 
     if (ui->extKeyRadioButton->isChecked()) {
-        std::string extKey =  stdStringFromQString(ui->extKeyLineEdit->text());
+        std::string extKey =  GUIUtil::stdStringFromQString(ui->extKeyLineEdit->text());
 
         if (! this->isValidExtKey(extKey)) {
             this->highlightBackgroundRed(ui->extKeyLineEdit);
-            ui->resultsTextEdit->clear();
             outputString("Error: Invalid extKey");
             return;
         }
         this->unHighlightAllTextEditsBackground();
-        this->clearTree();
 
         try {
             if (chain != "") {
@@ -533,8 +325,7 @@ void MainWindow::goClicked()
         }
     }
     else if (ui->seedRadioButton->isChecked()) {
-        std::string seedHex =  stdStringFromQString(ui->seedHexLineEdit->text());
-        this->clearTree();
+        std::string seedHex =  GUIUtil::stdStringFromQString(ui->seedHexLineEdit->text());
 
         try {
             if (chain != "") {
@@ -556,18 +347,12 @@ bool MainWindow::isValidExtKey(const std::string extKey)
     return true;
 }
 
+void MainWindow::outputString(const std::string& str) {
+    Logger::error(str);
+}
+
+
 MainWindow::~MainWindow()
 {
-    delete treeWidget;
     delete ui;
-}
-
-std::string MainWindow::stdStringFromQString(QString str) {
-    std::string s = str.toUtf8().constData();
-    return s;
-}
-
-QString MainWindow::qStringFromSTDString(std::string str) {
-    QString qstr = QString::fromStdString(str);
-    return qstr;
 }

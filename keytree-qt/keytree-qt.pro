@@ -23,6 +23,9 @@ SOURCES += main.cpp\
     keynode/keynode.cpp \
     keynode/logger.cpp \
     keynode/CoinClasses/hdkeys.cpp \
+    keytreeeditdialog.cpp \
+    keytreeutil.cpp \
+    guiutil.cpp
     keytreeutil.cpp
 
 HEADERS  += mainwindow.h \
@@ -40,6 +43,9 @@ HEADERS  += mainwindow.h \
     keynode/CoinClasses/secp256k1.h \
     keynode/CoinClasses/typedefs.h \
     keynode/CoinClasses/uchar_vector.h \
-    keytreeutil.h
+    keytreeeditdialog.h \
+    keytreeutil.h \
+    guiutil.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    keytreeeditdialog.ui
