@@ -93,6 +93,8 @@ static const QColor ROOT_NODE_PRIMARY_COLOR = Qt::blue;
 static const QColor ROOT_NODE_SECONDARY_COLOR = Qt::darkBlue;
 static const QColor NODE_PRIMARY_COLOR = Qt::yellow;
 static const QColor NODE_SECONDARY_COLOR = Qt::darkYellow;
+static const QColor LEAF_NODE_PRIMARY_COLOR = Qt::green;
+static const QColor LEAF_NODE_SECONDARY_COLOR = Qt::darkGreen;
 
 static const std::vector<std::string> defaultChains({NO_CHAIN,
                                                      CUSTOM_CHAIN,
@@ -149,7 +151,7 @@ void MainWindow::outputExtKeysFromExtKey(const std::string& extKey, const std::s
     else if (traversalType == TreeTraversal::levelorder) {
         treeChains.pop_front();
         std::deque<KeyNode> KeyNodeDeq;
-        std::deque<std::pair<uint64_t,std::string>> levelNChainDeq;
+        std::deque<std::pair<uint64_t,std::string>>  levelNChainDeq;
         std::deque<Node*> graphNodeDeq;
         traverseLevelorder(keyNode, treeChains, "___", 0, KeyNodeDeq, levelNChainDeq,
                            graphNodeDeq, NULL, isVerbose);
@@ -184,8 +186,18 @@ void MainWindow::traversePreorder(const KeyNode& keyNode, TreeChains treeChains,
                 if (isPrivate) k = toPrime(k);
                 std::string childChainName = chainName + "/" + iToString(k);
                 KeyNode childNode = keyNode.getChild(k);
+                QColor nodePrimaryColor;
+                QColor nodeSecondaryColor;
+                 if (! treeChains.empty()) {
+                     nodePrimaryColor = NODE_PRIMARY_COLOR;
+                     nodeSecondaryColor = NODE_SECONDARY_COLOR;
+                 }
+                 else {
+                     nodePrimaryColor = LEAF_NODE_PRIMARY_COLOR;
+                     nodeSecondaryColor = LEAF_NODE_SECONDARY_COLOR;
+                 }
                 Node* leaf = visit(childNode, childChainName, isVerbose,
-                                   NODE_PRIMARY_COLOR, NODE_SECONDARY_COLOR, currentLeft);
+                                   nodePrimaryColor, nodeSecondaryColor, currentLeft);
                 traversePreorder(childNode, treeChains, childChainName, isVerbose, leaf);
             }
         }
@@ -216,10 +228,20 @@ void MainWindow::traversePostorder(const KeyNode& keyNode, TreeChains treeChains
                 std::string childChainName = chainName + "/" + iToString(k);
                 KeyNode childNode = keyNode.getChild(k);
 
+                QColor nodePrimaryColor;
+                QColor nodeSecondaryColor;
+                 if (! treeChains.empty()) {
+                     nodePrimaryColor = NODE_PRIMARY_COLOR;
+                     nodeSecondaryColor = NODE_SECONDARY_COLOR;
+                 }
+                 else {
+                     nodePrimaryColor = LEAF_NODE_PRIMARY_COLOR;
+                     nodeSecondaryColor = LEAF_NODE_SECONDARY_COLOR;
+                 }
                 std::string nodeData(this->getNodeDataString(childNode, childChainName, isVerbose));
                 QString nodeDescription =  this->qStringFromSTDString(nodeData);
-                Node* leaf = this->treeWidget->addItem(nodeDescription, NODE_PRIMARY_COLOR,
-                                                       NODE_SECONDARY_COLOR, currentLeft);
+                Node* leaf = this->treeWidget->addItem(nodeDescription, nodePrimaryColor,
+                                                       nodeSecondaryColor, currentLeft);
                 traversePostorder(childNode, treeChains, childChainName, isVerbose, leaf);
                 outputString(nodeData);
             }
@@ -235,6 +257,8 @@ void MainWindow::traverseLevelorder(const KeyNode& keyNode, const TreeChains& tr
                                     bool isVerbose) {
 
     uint32_t childCount = 0;
+    QColor nodePrimaryColor;
+    QColor nodeSecondaryColor;
     if (level < treeChains.size()) {
         IsPrivateNPathRange isPrivateNPathRange = treeChains.at(level);
         bool isPrivate = isPrivateNPathRange.first;
@@ -254,18 +278,19 @@ void MainWindow::traverseLevelorder(const KeyNode& keyNode, const TreeChains& tr
 
             childCount++;
         }
+
+        if (level != 1) {
+            nodePrimaryColor = NODE_PRIMARY_COLOR;
+            nodeSecondaryColor = NODE_SECONDARY_COLOR;
+        } else {
+            nodePrimaryColor = ROOT_NODE_PRIMARY_COLOR;
+            nodeSecondaryColor = ROOT_NODE_SECONDARY_COLOR;
+        }
+    } else {
+        nodePrimaryColor = LEAF_NODE_PRIMARY_COLOR;
+        nodeSecondaryColor = LEAF_NODE_SECONDARY_COLOR;
     }
 
-   QColor nodePrimaryColor;
-   QColor nodeSecondaryColor;
-    if (level != 1) {
-        nodePrimaryColor = NODE_PRIMARY_COLOR;
-        nodeSecondaryColor = NODE_SECONDARY_COLOR;
-    }
-    else {
-        nodePrimaryColor = ROOT_NODE_PRIMARY_COLOR;
-        nodeSecondaryColor = ROOT_NODE_SECONDARY_COLOR;
-    }
     Node* newLeaf = visit(keyNode, chainName, isVerbose, nodePrimaryColor, nodeSecondaryColor, leaf);
 
     for (uint32_t i = 0; i < childCount; ++i) {
